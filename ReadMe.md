@@ -51,7 +51,7 @@ Follow LICENSE.md.
 - [ ] 指定した漢字に変換 trans_hanzi
 
 ### 漢字読み変換 HanziPronunciation
-- [ ] ピンイン hanzi_pinyin
+- [x] ピンイン hanzi_pinyin
 - [ ] 注音 hanzi_bpmf
 - [ ] 発音記号 hanzi_ipa
 
