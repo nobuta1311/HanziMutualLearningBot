@@ -2,7 +2,7 @@
 #Theme
 This is a developping LINE BOT application.
 I would like you Chinese and Japanese to learn each language more effectively by using LINE.
-The most import thing in Learning Chinese is to learn more hanzi I think. It is also important for learning Japanese to learn more and more Japanse strings.
+The most import thing in Learning Chinese is to see more hanzi I think. It is also important for learning Japanese to see more and more Japanse strings.
 So we support you to see and learn many text by multi-output way.
 
 # How to Use
@@ -15,7 +15,7 @@ Follow LICENSE.md.
 - As input methods, This app supports Image, voice, GPS, URL and text.
 - As output methods, This app also supports Image,voice,URL,stickers and text.
 
-# MileStone
+# ToDo
 
 ### 画像認識 ImageCognition
 - [ ] 漢字を抜き出す hanzi_cognition
