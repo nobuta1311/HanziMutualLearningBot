@@ -18,7 +18,8 @@ Follow LICENSE.md.
 # ToDo
 
 ### 画像認識 ImageCognition
-- [ ] 漢字を抜き出す hanzi_cognition
+- [x] 漢字を抜き出す [hanzi_cognition](/ImageCognition/hanzi_cognition.php)
+  改善必要
 - [ ] 日本語を抜き出す japanese_cognition
 - [ ] 物体を抜き出す things_cognition
 
@@ -74,7 +75,7 @@ Follow LICENSE.md.
 - [ ] 出力に応じて整形 string_formatting
 
 ### ひらがな化 JapaneseToHiragana
-- [ ] ひらがなAPIを使う [japanese_to_hiragana](/JapaneseToHiragana/japanese_to_hiragana.php)
+- [x] ひらがなAPIを使う [japanese_to_hiragana](/JapaneseToHiragana/japanese_to_hiragana.php)
 
 ### 代表漢字選別 EligibleChars
 - [ ] 学ぶべき漢字をサジェスト eligible_chars
