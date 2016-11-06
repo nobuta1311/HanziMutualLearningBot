@@ -51,7 +51,7 @@ Follow LICENSE.md.
 - [ ] 指定した漢字に変換 trans_hanzi
 
 ### 漢字読み変換 HanziPronunciation
-- [x] ピンイン hanzi_pinyin
+- [x] ピンイン [hanzi_pinyin](/HanziPronunciation/hanzi_pinyin.php)
 - [ ] 注音 hanzi_bpmf
 - [ ] 発音記号 hanzi_ipa
 
@@ -74,7 +74,7 @@ Follow LICENSE.md.
 - [ ] 出力に応じて整形 string_formatting
 
 ### ひらがな化 JapaneseToHiragana
-- [ ] ひらがなAPIを使う Japanese_to_hiragana
+- [ ] ひらがなAPIを使う [japanese_to_hiragana](/JapaneseToHiragana/japanese_to_hiragana.php)
 
 ### 代表漢字選別 EligibleChars
 - [ ] 学ぶべき漢字をサジェスト eligible_chars
@@ -84,3 +84,7 @@ Follow LICENSE.md.
 
 ### スタンプ選択 SelectSticker
 - [ ] 該当するイメージのスタンプをランダムで出力 select_sticker
+
+# 使用API
+- gooひらがな化API
+![URL](https://u.xgoo.jp/img/sgoo.png "gooロゴ")
