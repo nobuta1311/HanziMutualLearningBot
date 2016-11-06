@@ -4,9 +4,11 @@ include "appkey.php";
 if($argc==1){
     print "ERROR";
     return;
+}else{
+        $input = "";
+        for($i=1;$i<$argc;$i++)
+                $input.=$argv[$i];
 }
-$input = $argv[1];
-
 $url = 'https://labs.goo.ne.jp/api/hiragana';
 $data = array(
     'app_id' => $appID,
