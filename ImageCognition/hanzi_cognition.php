@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 include "apikey.php";// APIキーは別ファイルで
 	//入力

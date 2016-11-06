@@ -1,6 +1,10 @@
+#!/usr/bin/php
 <?php
-include "apekye.php";
-
+include "appkey.php";
+if($argc==1){
+    print "ERROR";
+    return;
+}
 $input = $argv[1];
 
 $url = 'https://labs.goo.ne.jp/api/hiragana';
@@ -10,9 +14,8 @@ $data = array(
     'output_type' => 'hiragana',
 );
 $headers = array(
-    'application: json', //jsonで送信
+    'Content-Type: application/x-www-form-urlencoded',
     'User-Agent: My User Agent 1.0',    //ユーザエージェントの指定
-    'Authorization: Basic '.base64_encode('user:pass'),//ベーシック認証
 );
 $options = array('http' => array(
     'method' => 'POST',
@@ -20,4 +23,5 @@ $options = array('http' => array(
     'header' => implode("\r\n", $headers),
 ));
 $contents = file_get_contents($url, false, stream_context_create($options));
+print ((json_decode($contents,true))[]"converted"]);
 ?>
