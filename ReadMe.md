@@ -88,4 +88,5 @@ Follow LICENSE.md.
 
 # 使用API
 - gooひらがな化API
+
 ![URL](https://u.xgoo.jp/img/sgoo.png "gooロゴ")
