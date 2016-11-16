@@ -52,10 +52,16 @@ Follow LICENSE.md.
 - [ ] 指定した漢字に変換 trans_hanzi
 
 ### 漢字読み変換 HanziPronunciation
-- [x] ピンイン [hanzi_pinyin](/HanziPronunciation/hanzi_pinyin.php)
-- [ ] 注音 hanzi_bpmf
-- [ ] 発音記号 hanzi_ipa
-
+文字コードをキーに，各読み方などの情報をデータベースとして記録する方針．
+下記プログラムはそれを参照する．
+- [x] 漢字からピンイン [hanzi_pinyin](/HanziPronunciation/hanzi_pinyin.php)
+- [ ] ピンインから注音 pinyin_bpmf
+- [ ] ピンインから発音記号 pinyin_ipa
+- [ ] 漢字から注音 hanzi_bpmf
+- [ ] 漢字から発音記号 hanzi_bpmf
+- [ ] indexから注音記号を返す bpmf_char
+- [ ] 注音記号をもとにindexを返す bpmf_index
+- [ ] 多音字を処理する multi_readable
 ### 音声合成 GenerateVoice
 - [ ] 中国語 generate_chinese
 - [ ] 日本語 generate_japanese
@@ -70,6 +76,10 @@ Follow LICENSE.md.
 
 ### 形態素解析 MorphologicalAnalysis
 - [ ] 形態素解析結果を返却 orphological_analysis
+[楽天MA](https://github.com/rakuten-nlp/rakutenma)
+
+### 量詞 CounterWord
+- [ ] 名詞に対して量詞（数助詞）を返却する
 
 ### 文字列整形 StringFormatting
 - [ ] 出力に応じて整形 string_formatting
@@ -90,3 +100,7 @@ Follow LICENSE.md.
 - gooひらがな化API
 
 ![URL](https://u.xgoo.jp/img/sgoo.png "gooロゴ")
+
+# 利用データ
+## [漢字データベース](http://kanji-database.sourceforge.net/index.html)
+## [Unihan Database](http://unicode.org/charts/unihan.html)
