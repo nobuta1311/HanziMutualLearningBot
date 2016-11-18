@@ -30,7 +30,7 @@ Follow LICENSE.md.
 - [ ] 文字列から言語を見分ける（プロフィール，音声入力結果）distinct_language
 
 ### 位置情報名取得 GetAddress
-- [ ] 地名を取得 get_address
+- [x] 地名を取得 get_address
 - [ ] 最寄りの駅名を取得（日本）get_station
 
 ### ウェブサイトから漢字取得 GetWebPage
@@ -56,11 +56,9 @@ Follow LICENSE.md.
 下記プログラムはそれを参照する．
 - [x] 漢字からピンイン [hanzi_pinyin](/HanziPronunciation/hanzi_pinyin.php)
 - [ ] ピンインから注音 pinyin_bpmf
+	- [ ] 漢字から注音 hanzi_bpmf
 - [ ] ピンインから発音記号 pinyin_ipa
-- [ ] 漢字から注音 hanzi_bpmf
-- [ ] 漢字から発音記号 hanzi_bpmf
-- [ ] indexから注音記号を返す bpmf_char
-- [ ] 注音記号をもとにindexを返す bpmf_index
+	- [ ] 漢字から発音記号 hanzi_bpmf
 - [ ] 多音字を処理する multi_readable
 ### 音声合成 GenerateVoice
 - [ ] 中国語 generate_chinese

@@ -1,17 +1,19 @@
 #!/usr/bin/php
 <?php
-include "apikey.php";// APIキーは別ファイルで
+include __DIR__."/apikey.php";// APIキーは別ファイルで
+//print $api_key;
 	//入力
 if(isset($_GET["str"])){
     $source=$_GET["str"];
 }else if($argc>1){
     $source=$argv[1];
+    $source= __DIR__."/".$source;
 }else{
     return;
 }
 
 // リファラー (許可するリファラーを設定した場合)
-$referer = "*.nobuta.xyz/*" ;
+$referer = "nobuta.xyz/*" ;
 // 画像へのパス
 $image_path = $source;//"./menkyo.png" ;
 // リクエスト用のJSONを作成
@@ -85,6 +87,7 @@ $header = substr( $res1, 0, $res2["header_size"] ) ;		// レスポンスヘッ�
 //	echo "<h2>JSON</h2>" ;
 //	echo $json ;
 $ar=json_decode($json,true);
-print_r($ar["responses"][0]["textAnnotations"][0]["description"]);
+//print_r($ar);
+print  ($ar["responses"][0]["textAnnotations"][0]["description"]);
 //	echo "<h2>ヘッダー</h2>" ;
 //	echo $header ;

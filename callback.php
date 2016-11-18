@@ -2,6 +2,8 @@
 require_once './lineapikey.php';
 require_once __DIR__ . '/../line/vendor/autoload.php';
 require_once "./command_carousel.php";
+//require_once "./HanziPronunciation/hanzi_pinyin.php";
+//require_once "./ImageCognition/HanziCognition.php";
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder as TextMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\MultiMessageBuilder as MultiMessageBuilder;
 //POST
@@ -17,14 +19,44 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意
     //テキストメッセージにはオウムで返す
     if ("text" == $event->message->type) {
-	$reserved = $event->message->text;
-	exec("php ./HanziPronunciation/hanzi_pinyin.php ".$reserved,$result);
+	$received = $event->message->text;
+	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
+	exec("./HanziPronunciation/hanzi_pinyin.php ".$received,$result);
 	
 	$MessageBuilder_part =  new TextMessageBuilder($result[0]);
 	$MessageBuilder->add($MessageBuilder_part);
-    } else {
+    }elseif("image" == $event->message->type){ 
+	$response = $bot->getMessageContent($event->message->id);
+        if ($response->isSucceeded()) {
+           	$tempfile = "./ImageCognition/images/".$event->message->id;
+    		file_put_contents($tempfile, $response->getRawBody());
+		exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
+		$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
+		file_put_contents($tempfile.".txt",$received);
+		//syslog(LOG_EMERG,print_r($received,true));
+		exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 1",$result_2);
+		//syslog(LOG_EMERG,print_r($result_2,true));
+		$MessageBuilder_part =  new TextMessageBuilder($result_2[0]);
+		$MessageBuilder->add($MessageBuilder_part);
+	
+	} else {
+    	//	syslog(LOG_EMERG,$response->getHTTPStatus() . ' ' . $response->getRawBody(),true);
+		$MessageBuilder_part = new TextMessageBuilder("画像アップロード失敗");
+	}
+    }elseif("video" == $event->message->type){
+    }elseif("audio" == $event->message->type){
+    }elseif("sticker" == $event->message->type){
 	$MessageBuilder_part = command_carousel();
-	syslog(LOG_EMERG, print_r($MessageBuilder_part, true));
+	$MessageBuilder->add($MessageBuilder_part);
+
+    }elseif("location" == $event->message->type){
+	$location =$event->message->address;
+	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($location)." 1",$result);
+	$MessageBuilder_part = new TextMessageBuilder($result[0]);
+	$MessageBuilder->add($MessageBuilder_part);
+    }else {
+	$MessageBuilder_part = command_carousel();
+//	syslog(LOG_EMERG, print_r($MessageBuilder_part, true));
 
 	$MessageBuilder->add($MessageBuilder_part);
     }

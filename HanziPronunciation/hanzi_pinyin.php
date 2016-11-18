@@ -5,14 +5,17 @@ $hanzionly=false;
 if(isset($_GET["str"])){
     $source=$_GET["str"];
 }else if($argc>1){
-    $source=$argv[1];
     if($argc>2 && $argv[2]==1){
         $hanzionly=true;
     }
+    $source="";
+    for($i=1;$i<$argc;$i++)
+        $source.=$argv[$i];
 }else{
     $source="亜";
 }
-file_put_contents("./log/sourcelog.txt",$source);
+$source = urldecode($source);
+//file_put_contents("./log/sourcelog.txt",$source);
 //入力を受け取る
 for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
     $target=mb_substr($source,$i,1,"UTF-8");
