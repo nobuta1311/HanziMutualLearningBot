@@ -2,7 +2,7 @@
 #Theme
 This is a developping LINE BOT application.
 I would like you Chinese and Japanese to learn each language more effectively by using LINE.
-The most import thing in Learning Chinese is to see more hanzi I think. It is also important for learning Japanese to see more and more Japanse strings.
+The most important thing in Learning Chinese is to see a lot of hanzi I think. It is also important for learning Japanese to see a lot of Japanse strings.
 So we support you to see and learn many text by multi-output way.
 
 # How to Use
@@ -12,8 +12,8 @@ Follow LICENSE.md.
 # MainFunction
 
 - Translate Hanzi to phonetic sign like bopomofo(Taiwan), pinyin(China Mainland),IPA.
-- As input methods, This app supports Image, voice, GPS, URL and text.
-- As output methods, This app also supports Image,voice,URL,stickers and text.
+- As input methods, This app supports image, voice, location, URL and text.
+- As output methods, also supports image,voice,URL,stickers and text.
 
 # ToDo
 
@@ -60,9 +60,10 @@ Follow LICENSE.md.
 - [ ] ピンインから発音記号 pinyin_ipa
 	- [ ] 漢字から発音記号 hanzi_bpmf
 - [ ] 多音字を処理する multi_readable
+
 ### 音声合成 GenerateVoice
-- [ ] 中国語 generate_chinese
-- [ ] 日本語 generate_japanese
+- [ ] 中国語生成 generate_chinese
+- [ ] 日本語生成 generate_japanese
 
 ### PDF画像化 PDFToImage
 - [ ] PDFを画像にする pdf_to_image

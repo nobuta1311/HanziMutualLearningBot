@@ -49,11 +49,19 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$MessageBuilder_part = command_carousel();
 	$MessageBuilder->add($MessageBuilder_part);
 
-    }elseif("location" == $event->message->type){
-	$location =$event->message->address;
-	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($location)." 1",$result);
+    }elseif("location" == $event->message->type){//latitude longitude
+	$lat=$event->message->latitude;
+	$lon=$event->message->longitude;
+	if(mb_strstr($event->message->address,",")){//カンマを含む場合は英語表記
+	exec("./GetAddress/get_address.php ".$lat." ".$lon,$location);
+	}else{
+	$location[0]=$event->message->address;
+	}
+	if($location[0]!=""){
+	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($location[0])." 0",$result);
 	$MessageBuilder_part = new TextMessageBuilder($result[0]);
 	$MessageBuilder->add($MessageBuilder_part);
+	}
     }else {
 	$MessageBuilder_part = command_carousel();
 //	syslog(LOG_EMERG, print_r($MessageBuilder_part, true));
