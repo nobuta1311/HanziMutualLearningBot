@@ -31,7 +31,6 @@ Follow LICENSE.md.
 
 ### 位置情報名取得 GetAddress
 - [x] 地名を取得 get_address
-- [ ] 最寄りの駅名を取得（日本）get_station
 
 ### ウェブサイトから漢字取得 GetWebPage
 - [ ] URLをもとにページの文字列を取得 get_web_page
