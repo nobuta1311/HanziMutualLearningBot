@@ -8,13 +8,10 @@ if(isset($_GET["str"])){
     if($argc>2 && $argv[2]==1){
         $hanzionly=true;
     }
-    $source="";
-    for($i=1;$i<$argc;$i++)
-        $source.=$argv[$i];
+    $source = urldecode($argv[1]);
 }else{
     $source="亜";
 }
-$source = urldecode($source);
 //file_put_contents("./log/sourcelog.txt",$source);
 //入力を受け取る
 for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
@@ -50,30 +47,27 @@ for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
 function pinyinchar($s){
     $tension=substr($s,-1)-1;
     $s=substr($s,0,strlen($s)-1);
-    if($tension==4){
-        return $s;
-    }
     $codes=array(
         array( //a
-            "0101","00E1","01CE","00E0"
+            "0101","00E1","01CE","00E0","0061"
         ),
         array( //o
-            "014D","00F3","01D2","00F2"
+            "014D","00F3","01D2","00F2","006F"
         ),
         array(//e
-            "0113","00E9","011B","00E8"
+            "0113","00E9","011B","00E8","0065"
         ),
         array(//u
-            "016B","00FA","01D4","00F9"
+            "016B","00FA","01D4","00F9","0075"
         ),
         array(//i
-            "012B","00ED","01D0","00EC"
+            "012B","00ED","01D0","00EC","0069"
         ),
         array(//v
             "01D6","01D8","01DA","01DC","00FC"
         )
     );
-    //var_dump($codes);
+       //var_dump($codes);
     $cha=strpos($s,"a");
     $cho=strpos($s,"o");
     $che=strpos($s,"e");

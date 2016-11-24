@@ -88,6 +88,15 @@ $header = substr( $res1, 0, $res2["header_size"] ) ;		// レスポンスヘッ�
 //	echo $json ;
 $ar=json_decode($json,true);
 //print_r($ar);
+/*
+$labels="";
+for($i=0;$i<sizeof($ar["responses"][0]["labelAnnotations"]);$i++){
+	  $labels.=trim($ar["responses"][0]["labelAnnotations"][$i]["description"]);
+}
+syslog(LOG_EMERG,print_r($labels,true));
+
+print $labels;
+*/
 print  ($ar["responses"][0]["textAnnotations"][0]["description"]);
 //	echo "<h2>ヘッダー</h2>" ;
 //	echo $header ;

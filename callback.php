@@ -21,7 +21,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     if ("text" == $event->message->type) {
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
-	exec("./HanziPronunciation/hanzi_pinyin.php ".$received,$result);
+	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 0",$result);
 	
 	$MessageBuilder_part =  new TextMessageBuilder($result[0]);
 	$MessageBuilder->add($MessageBuilder_part);
