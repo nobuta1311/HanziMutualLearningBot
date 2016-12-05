@@ -1,5 +1,6 @@
 #!/usr/bin/php
 <?php
+include "pinyin_bpmf.php";
 mb_internal_encoding("UTF-8");
 $hanzionly=false;
 if(isset($_GET["str"])){
@@ -33,7 +34,9 @@ for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
     foreach ($file as $key => $line){
         //$records[$key] = $line;
         if($line[0]===$code){ //文字コードが適合したら
-            print pinyinchar($line[1])." ";//\\n";
+            $pinyinres= pinyinchar($line[1])." ";//\\n";
+	 //   print $pinyinres;
+	    print pinyinToBpmf($line[1]);
             $flag=true;
             break;
         }
