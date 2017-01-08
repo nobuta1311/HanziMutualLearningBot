@@ -3,11 +3,15 @@
 include "pinyin_bpmf.php";
 mb_internal_encoding("UTF-8");
 $hanzionly=false;
-if(isset($_GET["str"])){
+$ispinyin =false;
+if(isset($_GET["str"])){ //URLでやる場合
     $source=$_GET["str"];
-}else if($argc>1){
-    if($argc>2 && $argv[2]==1){
+}else if($argc>1){	 //引数でやる場合
+    if( $argv[2]==1){
         $hanzionly=true;
+    }
+    if($argv[3]==1){
+	$ispinyin=true;
     }
     $source = urldecode($argv[1]);
 }else{
@@ -36,7 +40,8 @@ for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
         if($line[0]===$code){ //文字コードが適合したら
             $pinyinres= pinyinchar($line[1])." ";//\\n";
 	 //   print $pinyinres;
-	    print pinyinToBpmf($line[1]);
+	    if($ispinyin==true) print $pinyinres;
+	    else print pinyinToBpmf($line[1]);
             $flag=true;
             break;
         }

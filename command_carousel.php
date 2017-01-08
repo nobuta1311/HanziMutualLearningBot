@@ -14,7 +14,8 @@ function command_carousel(){
     for($i=0;$i<4;$i++) {
     // カルーセルに付与するボタンを作る
     	for($j=0;$j<3;$j++)
-    	$actions[$j] = new TemplateActionBuilder\UriTemplateActionBuilder($actions_message[$i*3+$j], "https://nobuta.xyz");//$actions_uri[$i*3+$j] );
+    	//$actions[$j] = new TemplateActionBuilder\UriTemplateActionBuilder($actions_message[$i*3+$j], "https://nobuta.xyz");//$actions_uri[$i*3+$j] );
+	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message[$i*3+$j],"ALTINFO?lang=".$j);
     // カルーセルのカラムを作成する
     	$column = new TemplateBuilder\CarouselColumnTemplateBuilder($column_title[$i], $column_detail[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/".$i.".png", $actions);
     	$columns[] = $column;
