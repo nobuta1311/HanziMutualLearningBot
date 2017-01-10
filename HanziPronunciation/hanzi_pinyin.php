@@ -4,6 +4,7 @@ include "pinyin_bpmf.php";
 mb_internal_encoding("UTF-8");
 $hanzionly=false;
 $ispinyin =false;
+$issum    =false;
 if(isset($_GET["str"])){ //URLでやる場合
     $source=$_GET["str"];
 }else if($argc>1){	 //引数でやる場合
@@ -13,41 +14,54 @@ if(isset($_GET["str"])){ //URLでやる場合
     if($argv[3]==1){
 	$ispinyin=true;
     }
+    if($argv[4]==1){
+	$issum=true;
+    }
     $source = urldecode($argv[1]);
 }else{
     $source="亜";
 }
 //file_put_contents("./log/sourcelog.txt",$source);
-//入力を受け取る
+//入力を受け取る 漢字+アルファの文字列で渡される
+$pastchars = [];
+$output="";
 for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
     $target=mb_substr($source,$i,1,"UTF-8");
     
     $code= strtoupper(substr(json_encode($target),3,4));
     if(hexdec($code)<hexdec("4E00") || hexdec($code)>hexdec("9FA5")){
         if($hanzionly==false){
-            print $target;
+		$output.= $target;
         }
         continue;
     }
-    
-    $filepath=dirname(__FILE__)."/pinyin.csv";
+    //新規漢字ならばリストに追加
+    //漢字を表示する
+    if(!$issum) $output.=" ";
+    if(in_array($target,$pastchars,true)){//含まれる場合
+	if($issum){continue;}else{$output.= $target;}
+    }else{
+	if($issum){$output.= $target;}
+        else{ $output.= $target;}
+        $pastchars[]=$target;
+    }
+ 
+
+   $filepath=dirname(__FILE__)."/pinyin.csv";
     $file = new SplFileObject($filepath); 
     $file->setFlags(SplFileObject::READ_CSV); 
-    print $target;#rehan($code);
-    $flag=false;
+
     foreach ($file as $key => $line){
         //$records[$key] = $line;
         if($line[0]===$code){ //文字コードが適合したら
             $pinyinres= pinyinchar($line[1])." ";//\\n";
-	 //   print $pinyinres;
-	    if($ispinyin==true) print $pinyinres;
-	    else print pinyinToBpmf($line[1]);
-            $flag=true;
+	 //   print $pinyinres
+	    if($ispinyin==true) $chartransed= $pinyinres;
+	    else $chartransed= pinyinToBpmf($line[1]);
+	    if($issum==true) $output.=$chartransed."\n";
+	    else $output.=$chartransed." ";
             break;
         }
-    }
-    if($flag==false){
-        print " ";
     }
 
 }
@@ -108,7 +122,7 @@ function pinyinchar($s){
     }
     return $result;
 }
-
+print json_encode($output);
 function rehan($code){
     $res= mb_convert_encoding(pack("H*",str_repeat('0', 8 - strlen($code)).$code), 'UTF-8', 'UTF-32BE');
     return $res;

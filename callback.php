@@ -26,22 +26,22 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     if ("text" == $event->message->type) {
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
-	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 0 ".getInfo($profile["id"],"lang"),$result);
+	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 0 ".getInfo($profile["id"],"lang")." 0",$result);
 	
-	$MessageBuilder_part =  new TextMessageBuilder($result[0]);
+	$MessageBuilder_part =  new TextMessageBuilder(json_decode($result[0]));
 	$MessageBuilder->add($MessageBuilder_part);
     }elseif("image" == $event->message->type){ 
 	$response = $bot->getMessageContent($event->message->id);
         if ($response->isSucceeded()) {
            	$tempfile = "./ImageCognition/images/".$event->message->id;
     		file_put_contents($tempfile, $response->getRawBody());
-		exec("./ImageCognition/hanzi_cognition.php .".$tempfile." 0 ".getInfo($profile["id"],"lang"),$result);
+		exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
 		$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
 		file_put_contents($tempfile.".txt",$received);
 		//syslog(LOG_EMERG,print_r($received,true));
-		exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 1",$result_2);
+		exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 1 ".getInfo($profile["id"],"lang")." 1",$result_2);
 		//syslog(LOG_EMERG,print_r($result_2,true));
-		$MessageBuilder_part =  new TextMessageBuilder($result_2[0]);
+		$MessageBuilder_part =  new TextMessageBuilder(json_decode($result_2[0]));
 		$MessageBuilder->add($MessageBuilder_part);
 	
 	} else {
@@ -63,8 +63,8 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$location[0]=$event->message->address;
 	}
 	if($location[0]!=""){
-	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($location[0])." 0 ".getInfo($profile["id"],"lang"),$result);
-	$MessageBuilder_part = new TextMessageBuilder($result[0]);
+	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($location[0])." 0 ".getInfo($profile["id"],"lang")." 0",$result);
+	$MessageBuilder_part = new TextMessageBuilder(json_decode($result[0]));
 	$MessageBuilder->add($MessageBuilder_part);
 	}
     }else {
