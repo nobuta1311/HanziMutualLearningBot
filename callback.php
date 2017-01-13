@@ -4,6 +4,7 @@ require_once __DIR__ . '/../line/vendor/autoload.php';
 require_once "./command_carousel.php";
 require_once "./ModUserAttr.php";
 require_once "./UserControl.php";
+require_once "./TransHanzi/TransSimpTrad.php";
 //require_once "./HanziPronunciation/hanzi_pinyin.php";
 //require_once "./ImageCognition/HanziCognition.php";
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder as TextMessageBuilder;
@@ -27,9 +28,14 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
 	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 0 ".getInfo($profile["id"],"lang")." 0",$result);
-	
 	$MessageBuilder_part =  new TextMessageBuilder(json_decode($result[0]));
 	$MessageBuilder->add($MessageBuilder_part);
+
+	$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
+	$MessageBuilder->add($MessageBuilder_part);
+	syslog(LOG_EMERG,print_r(transSimpTrad($received),true));
+
+
     }elseif("image" == $event->message->type){ 
 	$response = $bot->getMessageContent($event->message->id);
         if ($response->isSucceeded()) {
@@ -84,6 +90,9 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[$OutPutMode]);
 		$MessageBuilder->add($MessageBuilder_part);
 
+	}elseif($postbackeddata[0]=="USERCONF"){	
+		$MessageBuilder_part = modUserAttr();
+    		$MessageBuilder->add($MessageBuilder_part);
 	}
 	
 } elseif ("follow" == $event->type) {        //お友達追加時    
