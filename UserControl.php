@@ -26,7 +26,7 @@ function addUser($userid){
 		$users[] = $eachrow;
 		//ここで重複調査
 	}
-	$users[]=array("userid"=>$userid,"lang"=>0);
+	$users[]=array("userid"=>$userid,"lang"=>"0","base"=>"0");
 	file_put_contents(__DIR__."/UserList.json",json_encode($users));
 	return 0;
 }

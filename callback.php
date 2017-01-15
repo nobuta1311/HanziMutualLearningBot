@@ -27,13 +27,22 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     if ("text" == $event->message->type) {
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
+	$currentmode = getInfo($profile["id"],"base");
+	//syslog(LOG_EMERG,print_r($currentmode,true));
+	if($currentmode==0){
 	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 0 ".getInfo($profile["id"],"lang")." 0",$result);
 	$MessageBuilder_part =  new TextMessageBuilder(json_decode($result[0]));
 	$MessageBuilder->add($MessageBuilder_part);
-
+	}elseif($currentmode==6){
 	$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
 	$MessageBuilder->add($MessageBuilder_part);
-	syslog(LOG_EMERG,print_r(transSimpTrad($received),true));
+	}elseif($currentmode==1){	//１漢字
+	$lang_info = getInfo($profile["id"],"lang");
+	$langset=[["ja","wiki"],["ja","wiki"],["zh","wiki"],["zh","zh-hant"]];
+	$MessageBuilder_part = new TextMessageBuilder("https://".$langset[$lang_info][0].".m.wiktionary.org/".$langset[$lang_info][1]."/".mb_substr($received,0,1));
+	$MessageBuilder->add($MessageBuilder_part);
+	}
+	//syslog(LOG_EMERG,print_r(transSimpTrad($received),true));
 
 
     }elseif("image" == $event->message->type){ 
@@ -89,10 +98,17 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		altInfo($profile["id"],"lang",$OutPutMode);
 		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[$OutPutMode]);
 		$MessageBuilder->add($MessageBuilder_part);
-
 	}elseif($postbackeddata[0]=="USERCONF"){	
 		$MessageBuilder_part = modUserAttr();
     		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($postbackeddata[0]=="BASE"){
+		$actions_message_pattern=["通常の参照","漢字１文字の参照","テストと参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック","ユーザ設定変更","発音記号種類変更","リセット"];//12個
+
+		$postbacked_parameter=explode("=",$postbackeddata[1])[1];
+		altInfo($profile["id"],"base",$postbacked_parameter);	
+		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]."に変更");
+		$MessageBuilder->add($MessageBuilder_part);
+
 	}
 	
 } elseif ("follow" == $event->type) {        //お友達追加時    
