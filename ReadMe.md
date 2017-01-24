@@ -34,7 +34,7 @@ Follow LICENSE.md.
 
 ### ウェブサイトから漢字取得 GetWebPage
 - [ ] URLをもとにページの文字列を取得 get_web_page
-
+要検討（多すぎるため，読み込む漢字を厳選する必要がある）
 ### データベース登録 DatabaseMethods
 - [ ] 届いたメッセージarrived_message
 - [ ] 送信したメッセージsent_message
@@ -99,6 +99,13 @@ Wikitionaryに対応しているが，他の情報源もあわせて複数呈示
 - gooひらがな化API
 
 ![URL](https://u.xgoo.jp/img/sgoo.png "gooロゴ")
+
+- [Google Cloud Vision API](https://cloud.google.com/vision/)
+画像認識・位置情報の参照に利用している
+
+- [Microsoft Azure Bing Speech APi](https://azure.microsoft.com/ja-jp/services/cognitive-services/speech/)
+音声合成に利用している
+
 
 # 利用データ
 ## [漢字データベース](http://kanji-database.sourceforge.net/index.html)

@@ -52,6 +52,12 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder_part = new AudioMessageBuilder($UriDur[0],$UriDur[1]*1000);
 		$MessageBuilder->add($MessageBuilder_part);
 		}
+	}elseif($currentmode==8){
+		exec("linetxt.sh ".$received);
+		$MessageBuilder_part = new TextMessageBuilder("フィードバックは送信されました．発音の参照に変更されました．");
+		$MessageBuilder->add($MessageBuilder_part);
+		altInfo($profile["id"],"base",0);	
+		
 	}elseif($currentmode==1){	//１漢字
 		$lang_info = getInfo($profile["id"],"lang");
 		$langset=[["ja","wiki"],["ja","wiki"],["zh","wiki"],["zh","zh-hant"]];
@@ -120,11 +126,11 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder_part = modUserAttr();
     		$MessageBuilder->add($MessageBuilder_part);
 	}elseif($postbackeddata[0]=="BASE"){
-		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック","ユーザ設定変更","発音記号種類変更","リセット"];//12個
+		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック\n次に送るメッセージは開発者に届きます．","ユーザ設定変更","発音記号種類変更","リセット"];//12個
 
 		$postbacked_parameter=explode("=",$postbackeddata[1])[1];
 		altInfo($profile["id"],"base",$postbacked_parameter);	
-		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]."に変更");
+		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
 		$MessageBuilder->add($MessageBuilder_part);
 
 	}

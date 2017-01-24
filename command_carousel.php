@@ -11,9 +11,9 @@ function command_carousel(){
     $actions = [];
     //パラメータを順番に羅列
     $actions_message=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック","ユーザ設定変更","発音記号種類変更","リセット"];//12個
-    $actions_parameter=["BASE?mode=0","BASE?mode=1","BASE?mode=2","BASE?mode=3","BASE?mode=4","BASE?mode=5","BASE?mode=6","BASE?mode=7","USERCONF","USERCONF","USERCONF","USERCONF"];	//12個
-    $column_title=["漢字の読み方の参照","学習","サブ機能","設定変更"]; //4個
-    $column_detail=["入力された文字列から漢字を認識して参照します","学習のためのツールです","便利なサブ機能です","各種設定を行います"];
+    $actions_parameter=["BASE?mode=0","BASE?mode=1","BASE?mode=2","BASE?mode=3","BASE?mode=4","BASE?mode=5","BASE?mode=6","BASE?mode=7","BASE?mode=8","USERCONF","USERCONF","USERCONF"];	//12個
+    $column_title=["漢字の発音符号の参照","学習教材","付属機能","設定変更"]; //4個
+    $column_detail=["入力された文字列から漢字を認識して発音を参照します．\nテキスト/位置情報/画像","学習のためのツールです．","簡体字⇔繁体字の変換\n漢字の発音音声の生成\n開発者メッセージ送信","各種設定を行います"];
     for($i=0;$i<4;$i++) {
     // カルーセルに付与するボタンを作る
     	for($j=0;$j<3;$j++){
