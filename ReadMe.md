@@ -43,25 +43,26 @@ Follow LICENSE.md.
 - [ ] 漢字データベース修正 hanzi_base_mod
 
 ### 漢字辞書 ShowDict
-- [ ] 簡体字辞書へのリンク show_simple 
-- [ ] 繁体字辞書へのリンク show_trad
-(オープンデータなら文字列で語釈を返却)
+- [x] 簡体字辞書へのリンク show_simple 
+- [x] 繁体字辞書へのリンク show_trad
+
+Wikitionaryに対応しているが，他の情報源もあわせて複数呈示する
 
 ### 繁体字簡体字変換 TransHanzi
-- [ ] 指定した漢字に変換 trans_hanzi
-
+- [x] 指定した漢字に変換 trans_hanzi
+逆の文字に変換する．
 ### 漢字読み変換 HanziPronunciation
 文字コードをキーに，各読み方などの情報をデータベースとして記録する方針．
 下記プログラムはそれを参照する．
 - [x] 漢字からピンイン [hanzi_pinyin](/HanziPronunciation/hanzi_pinyin.php)
-- [ ] ピンインから注音 pinyin_bpmf
-	- [ ] 漢字から注音 hanzi_bpmf
+- [x] ピンインから注音 pinyin_bpmf
+	- [x] 漢字から注音 hanzi_bpmf
 - [ ] ピンインから発音記号 pinyin_ipa
 	- [ ] 漢字から発音記号 hanzi_bpmf
-- [ ] 多音字を処理する multi_readable
+- [x] 多音字を処理する multi_readable
 
 ### 音声合成 GenerateVoice
-- [ ] 中国語生成 generate_chinese
+- [x] 中国語生成 generate_chinese
 - [ ] 日本語生成 generate_japanese
 
 ### PDF画像化 PDFToImage
@@ -80,7 +81,7 @@ Follow LICENSE.md.
 - [ ] 名詞に対して量詞（数助詞）を返却する
 
 ### 文字列整形 StringFormatting
-- [ ] 出力に応じて整形 string_formatting
+- [x] 出力に応じて整形 string_formatting
 
 ### ひらがな化 JapaneseToHiragana
 - [x] ひらがなAPIを使う [japanese_to_hiragana](/JapaneseToHiragana/japanese_to_hiragana.php)
