@@ -1,7 +1,9 @@
-#!/usr/bin/php
 <?php
 include "pinyin_bpmf.php";
 mb_internal_encoding("UTF-8");
+
+function hanziPinyin($source,$hanzionly=false,$ispinyin=false,$issum=false){
+/*
 $hanzionly=false;
 $ispinyin =false;
 $issum    =false;
@@ -21,6 +23,7 @@ if(isset($_GET["str"])){ //URLでやる場合
 }else{
     $source="亜";
 }
+*/
 //file_put_contents("./log/sourcelog.txt",$source);
 //入力を受け取る 漢字+アルファの文字列で渡される
 $pastchars = [];
@@ -65,7 +68,11 @@ for($i=0;$i<mb_strlen($source,"UTF-8");$i++){
     }
 
 }
+if(sizeof($pastchars)!=0){
+	print json_encode($output);
+}
 
+}
 function pinyinchar($s){
     $tension=substr($s,-1)-1;
     $s=substr($s,0,strlen($s)-1);
@@ -122,7 +129,7 @@ function pinyinchar($s){
     }
     return $result;
 }
-print json_encode($output);
+
 function rehan($code){
     $res= mb_convert_encoding(pack("H*",str_repeat('0', 8 - strlen($code)).$code), 'UTF-8', 'UTF-32BE');
     return $res;

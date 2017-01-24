@@ -13,7 +13,7 @@ function modUserAttr(){
     $label=["簡体中国語学習者","繁体中国語学習者","簡体中国語話者","繁体中国語話者"];
     for($i=0;$i<4;$i++) {
     // アクション（選択肢）を作る
-    	$actions[$i] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$i], "ALTINFO?lang=".($i+1)%2);
+    	$actions[$i] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$i], "ALTINFO?lang=".$i);
     }
     $button = new TemplateBuilder\ButtonTemplateBuilder($title,$infotext,null,$actions);
 

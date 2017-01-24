@@ -5,8 +5,10 @@ require_once "./command_carousel.php";
 require_once "./ModUserAttr.php";
 require_once "./UserControl.php";
 require_once "./TransHanzi/TransSimpTrad.php";
-//require_once "./HanziPronunciation/hanzi_pinyin.php";
+require_once "./HanziPronunciation/HanziPinyin.php";
+require_once "./Voice/GenerateVoice.php";
 //require_once "./ImageCognition/HanziCognition.php";
+use \LINE\LINEBot\MessageBuilder\AudioMessageBuilder as AudioMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder as TextMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\MultiMessageBuilder as MultiMessageBuilder;
 //POST
@@ -23,24 +25,38 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
     addUser($profile["id"]);
 
-    //テキストメッセージにはオウムで返す
+    $currentmode = getInfo($profile["id"],"base");
     if ("text" == $event->message->type) {
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
-	$currentmode = getInfo($profile["id"],"base");
 	//syslog(LOG_EMERG,print_r($currentmode,true));
 	if($currentmode==0){
-	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 0 ".getInfo($profile["id"],"lang")." 0",$result);
-	$MessageBuilder_part =  new TextMessageBuilder(json_decode($result[0]));
-	$MessageBuilder->add($MessageBuilder_part);
+		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
+		//syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
+		$MessageBuilder_part =  new TextMessageBuilder($result);
+		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($currentmode==2){	//意味も表示する
+		$result=strHanziRead($received,true,getInfo($profile["id"],"lang"),true,true);
+		$MessageBuilder_part =  new TextMessageBuilder($result);
+		$MessageBuilder->add($MessageBuilder_part);
 	}elseif($currentmode==6){
-	$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
-	$MessageBuilder->add($MessageBuilder_part);
+		$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
+		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($currentmode==7){	
+		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
+		$MessageBuilder_part =  new TextMessageBuilder($result);
+		$MessageBuilder->add($MessageBuilder_part);
+		//まず読み方を表示してそのあと音声
+		$UriDur = generateVoice(mb_substr($received,0,1000),$userid);//フルURIにする
+		if(!$UriDur[0]==""){
+		$MessageBuilder_part = new AudioMessageBuilder($UriDur[0],$UriDur[1]*1000);
+		$MessageBuilder->add($MessageBuilder_part);
+		}
 	}elseif($currentmode==1){	//１漢字
-	$lang_info = getInfo($profile["id"],"lang");
-	$langset=[["ja","wiki"],["ja","wiki"],["zh","wiki"],["zh","zh-hant"]];
-	$MessageBuilder_part = new TextMessageBuilder("https://".$langset[$lang_info][0].".m.wiktionary.org/".$langset[$lang_info][1]."/".mb_substr($received,0,1));
-	$MessageBuilder->add($MessageBuilder_part);
+		$lang_info = getInfo($profile["id"],"lang");
+		$langset=[["ja","wiki"],["ja","wiki"],["zh","wiki"],["zh","zh-hant"]];
+		$MessageBuilder_part = new TextMessageBuilder("https://".$langset[$lang_info][0].".m.wiktionary.org/".$langset[$lang_info][1]."/".mb_substr($received,0,1));
+		$MessageBuilder->add($MessageBuilder_part);
 	}
 	//syslog(LOG_EMERG,print_r(transSimpTrad($received),true));
 
@@ -53,10 +69,13 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
 		$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
 		file_put_contents($tempfile.".txt",$received);
-		//syslog(LOG_EMERG,print_r($received,true));
-		exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($received)." 1 ".getInfo($profile["id"],"lang")." 1",$result_2);
+		if($currentmode==2){
+			$result_2=strHanziread($received,true,getInfo($profile["id"],"lang"),true,true);}
+		else{
+			$result_2=strHanziread($received,true,getInfo($profile["id"],"lang"),true,false);}
+			
 		//syslog(LOG_EMERG,print_r($result_2,true));
-		$MessageBuilder_part =  new TextMessageBuilder(json_decode($result_2[0]));
+		$MessageBuilder_part =  new TextMessageBuilder($result_2);
 		$MessageBuilder->add($MessageBuilder_part);
 	
 	} else {
@@ -78,14 +97,13 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$location[0]=$event->message->address;
 	}
 	if($location[0]!=""){
-	exec("./HanziPronunciation/hanzi_pinyin.php ".urlencode($location[0])." 0 ".getInfo($profile["id"],"lang")." 0",$result);
-	$MessageBuilder_part = new TextMessageBuilder(json_decode($result[0]));
-	$MessageBuilder->add($MessageBuilder_part);
+		$result=strHanziRead($location[0],false,getInfo($profile["id"],"lang"),false);
+		$MessageBuilder_part =  new TextMessageBuilder($result);
+		$MessageBuilder->add($MessageBuilder_part);
 	}
     }else {
 	$MessageBuilder_part = command_carousel();
 //	syslog(LOG_EMERG, print_r($MessageBuilder_part, true));
-
 	$MessageBuilder->add($MessageBuilder_part);
     }
 } elseif("postback" == $event->type){
@@ -96,13 +114,13 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$OutPutModes=["注音モードに変更しました","拼音モードに変更しました"]; 
 		$OutPutMode=explode("=",$postbackeddata[1])[1];
 		altInfo($profile["id"],"lang",$OutPutMode);
-		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[$OutPutMode]);
+		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[($OutPutMode+1)%2]);
 		$MessageBuilder->add($MessageBuilder_part);
 	}elseif($postbackeddata[0]=="USERCONF"){	
 		$MessageBuilder_part = modUserAttr();
     		$MessageBuilder->add($MessageBuilder_part);
 	}elseif($postbackeddata[0]=="BASE"){
-		$actions_message_pattern=["通常の参照","漢字１文字の参照","テストと参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック","ユーザ設定変更","発音記号種類変更","リセット"];//12個
+		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック","ユーザ設定変更","発音記号種類変更","リセット"];//12個
 
 		$postbacked_parameter=explode("=",$postbackeddata[1])[1];
 		altInfo($profile["id"],"base",$postbacked_parameter);	
@@ -113,13 +131,13 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	
 } elseif ("follow" == $event->type) {        //お友達追加時    
     $MessageBuilder = new MultiMessageBuilder();	
-    $MessageBuilder_part = new TextMessageBuilder("お友達追加ありがとうございます．このBotは中国語を効率的に学ぶためのLINEbotです．まず，あなたの情報を教えてください．");
+   $MessageBuilder_part = modUserAttr();
     $MessageBuilder->add($MessageBuilder_part);
-    $MessageBuilder_part = modUserAttr();
+    $MessageBuilder_part = new TextMessageBuilder("お友達追加ありがとうございます．このBotは中国語を効率的に学ぶためのLINEbotです．まず，あなたの利用方法を教えてください．\n各種機能や設定を行うときには何かスタンプを送ってみてください．");
     $MessageBuilder->add($MessageBuilder_part);
-
+ 
     addUser($profile["id"]);
-
+    exec("notify ".$profile["id"]);
 } elseif ("join" == $event->type) {           //グループに入ったときのイベント
     $MessageBuilder= new TextMessageBuilder('グループご招待ありがとうございます．');
 } elseif("leave" == $event->type){
@@ -132,6 +150,5 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 if($MessageBuilder!=null){
 	$response = $bot->replyMessage($event->replyToken, $MessageBuilder);
 }
-//syslog(LOG_EMERG, print_r($event->replyToken, true));
-//syslog(LOG_EMERG, print_r($response, true));
+//syslog(LOG_EMERG, print_r($MessageBuilder, true));
 return;
