@@ -29,8 +29,11 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     if ("text" == $event->message->type) {
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
-	//syslog(LOG_EMERG,print_r($currentmode,true));
-	if($currentmode==0){
+
+//	syslog(LOG_EMERG,print_r(mb_substr($received,0,3),true));
+	if(mb_substr($received,0,3)=="@@@"){
+		$MessageBuilder=altByPostback("BASE",mb_substr($received,3),$profile);
+	}elseif($currentmode==0){
 		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
 		//syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
 		$MessageBuilder_part =  new TextMessageBuilder($result);
@@ -53,7 +56,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder->add($MessageBuilder_part);
 		}
 	}elseif($currentmode==8){
-		exec("linetxt.sh ".$received);
+		exec("linetxt.sh "."=BOTからのフィードバック=\n\n".$received);
 		$MessageBuilder_part = new TextMessageBuilder("フィードバックは送信されました．発音の参照に変更されました．");
 		$MessageBuilder->add($MessageBuilder_part);
 		altInfo($profile["id"],"base",0);	
@@ -114,34 +117,15 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     }
 } elseif("postback" == $event->type){
 	$postbackeddata=explode("?",$event->postback->data);
-	$MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
+	$MessageBuilder = altByPostback($postbackeddata[0],$postbackeddata[1],$profile);
 
-	if($postbackeddata[0]=="ALTINFO"){
-		$OutPutModes=["注音モードに変更しました","拼音モードに変更しました"]; 
-		$OutPutMode=explode("=",$postbackeddata[1])[1];
-		altInfo($profile["id"],"lang",$OutPutMode);
-		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[($OutPutMode+1)%2]);
-		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($postbackeddata[0]=="USERCONF"){	
-		$MessageBuilder_part = modUserAttr();
-    		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($postbackeddata[0]=="BASE"){
-		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック\n次に送るメッセージは開発者に届きます．","ユーザ設定変更","発音記号種類変更","リセット"];//12個
-
-		$postbacked_parameter=explode("=",$postbackeddata[1])[1];
-		altInfo($profile["id"],"base",$postbacked_parameter);	
-		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
-		$MessageBuilder->add($MessageBuilder_part);
-
-	}
-	
 } elseif ("follow" == $event->type) {        //お友達追加時    
     $MessageBuilder = new MultiMessageBuilder();	
    $MessageBuilder_part = modUserAttr();
     $MessageBuilder->add($MessageBuilder_part);
     $MessageBuilder_part = new TextMessageBuilder("お友達追加ありがとうございます．このBotは中国語を効率的に学ぶためのLINEbotです．まず，あなたの利用方法を教えてください．\n各種機能や設定を行うときには何かスタンプを送ってみてください．");
     $MessageBuilder->add($MessageBuilder_part);
- 
+
     addUser($profile["id"]);
     exec("notify ".$profile["id"]);
 } elseif ("join" == $event->type) {           //グループに入ったときのイベント
@@ -158,3 +142,27 @@ if($MessageBuilder!=null){
 }
 //syslog(LOG_EMERG, print_r($MessageBuilder, true));
 return;
+
+function altByPostback($alttype,$altdata,$profile){
+	$MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
+	
+	if($alttype=="ALTINFO"){
+		$OutPutModes=["注音モードに変更しました","拼音モードに変更しました"]; 
+		$OutPutMode=explode("=",$altdata)[1];
+		altInfo($profile["id"],"lang",$OutPutMode);
+		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[($OutPutMode+1)%2]);
+		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($alttype=="USERCONF"){	
+		$MessageBuilder_part = modUserAttr();
+    		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($alttype=="BASE"){
+		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック\n次に送るメッセージは開発者に届きます．","ユーザ設定変更","発音記号種類変更","リセット"];//12個
+
+		$postbacked_parameter=explode("=",$altdata)[1];
+		altInfo($profile["id"],"base",$postbacked_parameter);	
+		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
+		$MessageBuilder->add($MessageBuilder_part);
+
+	}
+	return $MessageBuilder;
+}

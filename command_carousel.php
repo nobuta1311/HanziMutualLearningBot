@@ -27,6 +27,8 @@ function command_carousel(){
 // カラムの配列を組み合わせてカルーセルを作成する
     $carousel = new TemplateBuilder\CarouselTemplateBuilder($columns);
 // カルーセルを追加してメッセージを作る
-    $carousel_message = new TemplateMessageBuilder("モード選択\nデフォルトでは漢字の認識をします．", $carousel);
+    $messageforpc = "モード選択\n@@@mode=1 などと入力すると返信を変更できます．";
+    for($i=0;$i<12;$i++)$messageforpc.="\n".$i.":".$actions_message[$i];
+    $carousel_message = new TemplateMessageBuilder($messageforpc,$carousel);
     return $carousel_message;
 }
