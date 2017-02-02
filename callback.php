@@ -7,10 +7,19 @@ require_once "./UserControl.php";
 require_once "./TransHanzi/TransSimpTrad.php";
 require_once "./HanziPronunciation/HanziPinyin.php";
 require_once "./Voice/GenerateVoice.php";
+require_once "./Log/LoggingInput.php";
+require_once "./Learning/SendQuiz.php";
+require_once "./Log/SendQuery.php";
 //require_once "./ImageCognition/HanziCognition.php";
 use \LINE\LINEBot\MessageBuilder\AudioMessageBuilder as AudioMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder as TextMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\MultiMessageBuilder as MultiMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\TemplateMessageBuilder as TemplateMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\TemplateBuilder\ConfirmTemplateBuilder	as ConfirmTemplateBuilder; 
+use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
+use \LINE\LINEBot\TemplateActionBuilder\MessageTemplateActionBuilder as MessageTemplateActionBuilder;
+
 //POST
 $input = file_get_contents('php://input');
 $json = json_decode($input);
@@ -32,16 +41,39 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 
 //	syslog(LOG_EMERG,print_r(mb_substr($received,0,3),true));
 	if(mb_substr($received,0,3)=="@@@"){
-		$MessageBuilder=altByPostback("BASE",mb_substr($received,3),$profile);
+		$inputbytxt = explode("?",$received);
+		$MessageBuilder=altByPostback(mb_substr($inputbytxt[0],3),$inputbytxt[1],$profile);
 	}elseif($currentmode==0){
-		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
 		//syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
+		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
 		$MessageBuilder->add($MessageBuilder_part);
+		loggingInput($profile["id"],$currentmode,$received,strHanziOnly($received));//ログ
 	}elseif($currentmode==2){	//意味も表示する
 		$result=strHanziRead($received,true,getInfo($profile["id"],"lang"),true,true);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
 		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($currentmode==3){//入力に対してクイズを出す
+		$result = sendQuiz(strHanziOnly($received),getInfo($profile["id"],"lang"));
+		if(sizeof($result[0])==0){
+			$MessageBuilder_part =  new TextMessageBuilder("出題候補がありません．");
+			$MessageBuilder->add($MessageBuilder_part);
+		}else{
+		for($i=0;$i<sizeof($result[0]);$i++){
+			shuffle($result[1][$i]);
+ 			$label=[$result[1][$i][0],$result[1][$i][1],$result[1][$i][2],$result[1][$i][3]];
+		//	syslog(LOG_EMERG,print_r($result[1],true));
+    			for($j=0;$j<4;$j++) {
+    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]);
+    			}
+			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\" の発音は？","以下より選択してください",null,$actions);	
+//$confirm = new ConfirmTemplateBuilder($result[0][$i]."の発音は".$result[1][$i],[$action_yes,$action_no]);
+				$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i]."の発音の確認",$button);
+				$MessageBuilder->add($MessageBuilder_part);
+
+			}
+		}
+
 	}elseif($currentmode==6){
 		$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
 		$MessageBuilder->add($MessageBuilder_part);
@@ -56,8 +88,8 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder->add($MessageBuilder_part);
 		}
 	}elseif($currentmode==8){
-		exec("linetxt.sh "."=BOTからのフィードバック=\n\n".$received);
-		$MessageBuilder_part = new TextMessageBuilder("フィードバックは送信されました．発音の参照に変更されました．");
+		exec("linetxt.sh "."\"=BOTからの送信：".$received."\"");
+		$MessageBuilder_part = new TextMessageBuilder("送信されました．\n設定は発音の参照に変更されました．");
 		$MessageBuilder->add($MessageBuilder_part);
 		altInfo($profile["id"],"base",0);	
 		
@@ -96,7 +128,8 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     }elseif("sticker" == $event->message->type){
 	$MessageBuilder_part = command_carousel();
 	$MessageBuilder->add($MessageBuilder_part);
-
+	$MessageBuilder_part =  new TextMessageBuilder("↑応答設定機能一覧↑");
+	$MessageBuilder->add($MessageBuilder_part);
     }elseif("location" == $event->message->type){//latitude longitude
 	$lat=$event->message->latitude;
 	$lon=$event->message->longitude;
@@ -164,5 +197,18 @@ function altByPostback($alttype,$altdata,$profile){
 		$MessageBuilder->add($MessageBuilder_part);
 
 	}
+	elseif($alttype=="PRO"){ //char&ans
+		$data= explode("&",$altdata);
+		$hanzi = explode("=",$data[0])[1];
+		$ans = explode("=",$data[1])[1];
+		$tempans = searchFromReading($hanzi,null,getInfo($profile["id"],"lang"));
+		if($ans == $tempans){
+			loggingLearntHanzi($profile["id"],$hanzi,0,5);
+		}else{
+			loggingLearntHanzi($profile["id"],$hanzi,0,1);
+		}
+
+	}
+
 	return $MessageBuilder;
 }

@@ -1,7 +1,11 @@
 <?php
 mb_internal_encoding("utf-8");
 //print strHanziRead("蔡英文",true,1,true,true);
+
+include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/pinyin_bpmf.php";
+
 function strHanziRead($inputstr,$hanzionly=false,$userinfo,$issum=false,$mean=false){
+
 //meanはtrueならばissumもhanzionlyもtrueである
 if($mean){$hanzionly=true;$issum=true;}
 $hanzicount=0;
@@ -9,9 +13,8 @@ if($userinfo%2==0)$ispinyin=true;
 else $ispinyin=false;
 //hanzionlyならば関係ない文字を出力しない
 include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/idpass.php";
-include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/pinyin_bpmf.php";
 
-$pdo = new PDO("mysql:host=localhost;dbname=Hanzi",$databaseuser,$databasepass);
+//syslog(LOG_EMERG,print_r($inputstr,true));
 $inputstrlen=mb_strlen($inputstr);
 $outputread=array();
 $outputmean=array();
@@ -19,7 +22,7 @@ $outputstr="";
 for($i=10;$i>1;$i--){
 	if($inputstrlen<$i)continue;
 	for($j=0;$j+$i<=$inputstrlen;$j++){
-		$finded = searchFromDictEach($pdo,mb_substr($inputstr,$j,$i));
+		$finded = searchFromDictEach(mb_substr($inputstr,$j,$i));
 		if(sizeof($finded)>0){
 		$hanzicount+=$i;
 
@@ -55,7 +58,7 @@ for($j=0;$j<$inputstrlen;$j++){	//最後の１文字は別の辞書から
        		//continue;
     	}elseif(mb_substr($inputstr,$j,1)!="#"){
 		$hanzicount+=1;
-		$searchedPinyin=searchFromReading($pdo,mb_substr($inputstr,$j,1),null,$userinfo);
+		$searchedPinyin=searchFromReading(mb_substr($inputstr,$j,1),null,$userinfo);
 		$outputchar[$j]=mb_substr($inputstr,$j,1);
 
 
@@ -87,16 +90,15 @@ if($hanzicount==0)$outputstr="";
 return rtrim($outputstr,"\n");
 }
 
-function searchFromDictEach($dbh,$word){
+function searchFromDictEach($word){
+include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/idpass.php";
 $query = "SELECT * FROM dict where trad_str=\"".$word."\" or simp_str=\"".$word."\"";
-$stmt = $dbh->prepare("SELECT * FROM dict where trad_str=\"".$word."\" or simp_str=\"".$word."\"");
-$stmt->execute();
-$result=$stmt->fetchAll(PDO::FETCH_ASSOC);
-$stmt->closeCursor(); // this is not even required
+$result =sendQuery($query);
 return $result;
 }
 
-function searchFromReading($dbh,$inputchar,$inputcharcode,$userinfo){//単一文字とする 
+function searchFromReading($inputchar,$inputcharcode,$userinfo){//単一文字とする 
+include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/idpass.php";
 //userinfoは簡体字繁體字簡体字繁體字
 $query="";
 if($userinfo%2==0){//簡体字
@@ -104,23 +106,26 @@ if($userinfo%2==0){//簡体字
 		$query="select mandarin_cn from reading where char_code=\"".$inputcharcode."\"";
 	else
 		$query="select mandarin_cn from reading where achar=\"".$inputchar."\"";
+	$result = sendQuery($query);
+	if(isset($result[0]) and isset($result[0]["mandarin_cn"]))
+		return $result[0]["mandarin_cn"];
+	else
+		return null;
 }
 else{	
 	if($inputchar==null)
 		$query="select mandarin_tw from reading where char_code=\"".$inputcharcode."\"";
 	else
 		$query="select mandarin_tw from reading where achar=\"".$inputchar."\"";
-
+	$result = sendQuery($query);
+	if(isset($result[0]) and isset($result[0]["mandarin_tw"]))
+		if($userinfo==1)
+			return $result[0]["mandarin_tw"];
+		else
+			return $result[0]["mandarin_tw"];
+	else
+		return null;
 }
-$stmt = $dbh->prepare($query);
-$stmt->execute();
-$result=$stmt->fetchAll(PDO::FETCH_ASSOC);
-$stmt->closeCursor(); // this is not even required
-if($userinfo%2==0)
-	return $result[0]["mandarin_cn"];
-else
-	return $result[0]["mandarin_tw"];
-
 }
 
 function charPinyin($s){
@@ -223,3 +228,16 @@ function rehan($code){
     $res= mb_convert_encoding(pack("H*",str_repeat('0', 8 - strlen($code)).$code), 'UTF-8', 'UTF-32BE');
     return $res;
 }
+function strHanziOnly($inputstr){
+	$inputstrlen = mb_strlen($inputstr);
+	$outputstr.="";
+	for($j=0;$j<$inputstrlen;$j++){	//最後の１文字は別の辞書から
+	$acode= strtoupper(substr(json_encode(mb_substr($inputstr,$j,1)),3,4));
+	if(mb_substr($inputstr,$j,1)!="#" and (hexdec($acode)<hexdec("4E00") || hexdec($acode)>hexdec("9FA5"))){//漢字でない場合
+        }else{
+		$outputstr.=mb_substr($inputstr,$j,1);
+	}
+	}
+	return $outputstr;
+}
+
