@@ -4,14 +4,19 @@ function getProfile($event){
 	if($event->source->type=="user") {
 		$profile["type"]="user";
 		$profile["id"]=$event->source->userId;
+		$profile["lang"] = getInfo($profile["id"],"lang");
+		$profile["base"] = getInfo($profile["id"],"base");
 	}
 	elseif($event->source->type=="group"){
 		$profile["type"]="group";
-		$profile["id"]=$event->source->groupId;
+		$profile["id"]=$event->source->groupId;				$profile["lang"] = getInfo($profile["id"],"lang");
+		$profile["base"] = getInfo($profile["id"],"base");
+
 	}
 	else {
 		$profile["type"]="room";
-		$profile["id"]=$event->source->roomId;
+		$profile["id"]=$event->source->roomId;				$profile["lang"] = getInfo($profile["id"],"lang");
+		$profile["base"] = getInfo($profile["id"],"base");
 	}
 	return $profile;
 }

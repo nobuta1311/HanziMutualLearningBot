@@ -2,7 +2,7 @@
 mb_internal_encoding("utf-8");
 //print strHanziRead("蔡英文",true,1,true,true);
 
-include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/pinyin_bpmf.php";
+include "./pinyin_bpmf.php";
 
 function strHanziRead($inputstr,$hanzionly=false,$userinfo,$issum=false,$mean=false){
 
@@ -12,7 +12,6 @@ $hanzicount=0;
 if($userinfo%2==0)$ispinyin=true;
 else $ispinyin=false;
 //hanzionlyならば関係ない文字を出力しない
-include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/idpass.php";
 
 //syslog(LOG_EMERG,print_r($inputstr,true));
 $inputstrlen=mb_strlen($inputstr);

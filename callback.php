@@ -27,6 +27,7 @@ $event = $json->events[0];
 $httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient($lineaccesstoken);
 $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $linechannelsecret]);
 $MessageBuilder = null;
+
 $profile = getProfile($event);
 
 //イベントタイプ判別
@@ -34,7 +35,6 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
     addUser($profile["id"]);
 
-    $currentmode = getInfo($profile["id"],"base");
     if ("text" == $event->message->type) {
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
@@ -43,18 +43,27 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	if(mb_substr($received,0,3)=="@@@"){
 		$inputbytxt = explode("?",$received);
 		$MessageBuilder=altByPostback(mb_substr($inputbytxt[0],3),$inputbytxt[1],$profile);
-	}elseif($currentmode==0){
+	}else{
+        switch($profile["base"]){
+	case 0:
 		//syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
-		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
+		$result=strHanziRead($received,false,$profile["lang"],false);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
 		$MessageBuilder->add($MessageBuilder_part);
 		loggingInput($profile["id"],$currentmode,$received,strHanziOnly($received));//ログ
-	}elseif($currentmode==2){	//意味も表示する
-		$result=strHanziRead($received,true,getInfo($profile["id"],"lang"),true,true);
+		break;
+	case 1:
+		$langset=[["ja","wiki"],["ja","wiki"],["zh","wiki"],["zh","zh-hant"]];
+		$MessageBuilder_part = new TextMessageBuilder("https://".$langset[$profile["lang"]][0].".m.wiktionary.org/".$langset[$profile["lang"]][1]."/".mb_substr($received,0,1));
+		$MessageBuilder->add($MessageBuilder_part);
+		break;
+	case 2:
+		$result=strHanziRead($received,true,$profile["lang"],true,true);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
 		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($currentmode==3){//入力に対してクイズを出す
-		$result = sendQuiz(strHanziOnly($received),getInfo($profile["id"],"lang"));
+		break;
+	case 3:
+		$result = sendQuiz(strHanziOnly($received),$profile["lang"]);
 		if(sizeof($result[0])==0){
 			$MessageBuilder_part =  new TextMessageBuilder("出題候補がありません．");
 			$MessageBuilder->add($MessageBuilder_part);
@@ -67,18 +76,18 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]);
     			}
 			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\" の発音は？","以下より選択してください",null,$actions);	
-//$confirm = new ConfirmTemplateBuilder($result[0][$i]."の発音は".$result[1][$i],[$action_yes,$action_no]);
 				$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i]."の発音の確認",$button);
 				$MessageBuilder->add($MessageBuilder_part);
 
 			}
 		}
-
-	}elseif($currentmode==6){
+		break;
+	case 6:
 		$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
 		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($currentmode==7){	
-		$result=strHanziRead($received,false,getInfo($profile["id"],"lang"),false);
+		break;
+	case 7:
+		$result=strHanziRead($received,false,$profile["lang"],false);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
 		$MessageBuilder->add($MessageBuilder_part);
 		//まず読み方を表示してそのあと音声
@@ -87,20 +96,16 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder_part = new AudioMessageBuilder($UriDur[0],$UriDur[1]*1000);
 		$MessageBuilder->add($MessageBuilder_part);
 		}
-	}elseif($currentmode==8){
+		break;
+	case 8:
 		exec("linetxt.sh "."\"=BOTからの送信：".$received."\"");
 		$MessageBuilder_part = new TextMessageBuilder("送信されました．\n設定は発音の参照に変更されました．");
 		$MessageBuilder->add($MessageBuilder_part);
-		altInfo($profile["id"],"base",0);	
-		
-	}elseif($currentmode==1){	//１漢字
-		$lang_info = getInfo($profile["id"],"lang");
-		$langset=[["ja","wiki"],["ja","wiki"],["zh","wiki"],["zh","zh-hant"]];
-		$MessageBuilder_part = new TextMessageBuilder("https://".$langset[$lang_info][0].".m.wiktionary.org/".$langset[$lang_info][1]."/".mb_substr($received,0,1));
-		$MessageBuilder->add($MessageBuilder_part);
-	}
+		altInfo($profile["id"],"base",0);
+		break;
+	}//end of switch
 	//syslog(LOG_EMERG,print_r(transSimpTrad($received),true));
-
+   	}//end of else
 
     }elseif("image" == $event->message->type){ 
 	$response = $bot->getMessageContent($event->message->id);
@@ -111,9 +116,9 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
 		file_put_contents($tempfile.".txt",$received);
 		if($currentmode==2){
-			$result_2=strHanziread($received,true,getInfo($profile["id"],"lang"),true,true);}
+			$result_2=strHanziread($received,true,$profile["lang"],true,true);}
 		else{
-			$result_2=strHanziread($received,true,getInfo($profile["id"],"lang"),true,false);}
+			$result_2=strHanziread($received,true,$profile["lang"],true,false);}
 			
 		//syslog(LOG_EMERG,print_r($result_2,true));
 		$MessageBuilder_part =  new TextMessageBuilder($result_2);
@@ -139,7 +144,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$location[0]=$event->message->address;
 	}
 	if($location[0]!=""){
-		$result=strHanziRead($location[0],false,getInfo($profile["id"],"lang"),false);
+		$result=strHanziRead($location[0],false,$profile["lang"],false);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
 		$MessageBuilder->add($MessageBuilder_part);
 	}
@@ -180,16 +185,26 @@ function altByPostback($alttype,$altdata,$profile){
 	$MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 	
 	if($alttype=="ALTINFO"){
-		$OutPutModes=["注音モードに変更しました","拼音モードに変更しました"]; 
+		$OutPutModes=["簡体字学習者に変更しました","繁体字学習者に変更しました","簡体字使用者に変更しました","繁体字使用者に変更しました．"]; 
 		$OutPutMode=explode("=",$altdata)[1];
 		altInfo($profile["id"],"lang",$OutPutMode);
 		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[($OutPutMode+1)%2]);
 		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($alttype=="ALTCHAR"){
+		$OutPutModes=["拼音モードに変更しました","注音モードに変更しました"]; 
+	$OutPutMode=explode("=",$altdata)[1];
+		altInfo($profile["id"],"char",$OutPutMode);
+		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[$OutPutMode]);
+		$MessageBuilder->add($MessageBuilder_part);
+
 	}elseif($alttype=="USERCONF"){	
 		$MessageBuilder_part = modUserAttr();
     		$MessageBuilder->add($MessageBuilder_part);
+	}elseif($alttype=="CHARCONF"){	
+		$MessageBuilder_part = modCharAttr();
+    		$MessageBuilder->add($MessageBuilder_part);
 	}elseif($alttype=="BASE"){
-		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","クイズを開始","学習状況画像","記録済み漢字一覧","簡体字繁体字相互変換","音声確認","フィードバック\n次に送るメッセージは開発者に届きます．","ユーザ設定変更","発音記号種類変更","リセット"];//12個
+		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","発音クイズ機能を有効にします","単語クイズ機能を有効にします","学習履歴を確認します","簡体字繁体字相互変換","音声確認","フィードバック\n次に送るメッセージは開発者に届きます．","ユーザ設定変更","発音記号種類変更","リセット"];//12個
 
 		$postbacked_parameter=explode("=",$altdata)[1];
 		altInfo($profile["id"],"base",$postbacked_parameter);	
@@ -201,14 +216,16 @@ function altByPostback($alttype,$altdata,$profile){
 		$data= explode("&",$altdata);
 		$hanzi = explode("=",$data[0])[1];
 		$ans = explode("=",$data[1])[1];
-		$tempans = searchFromReading($hanzi,null,getInfo($profile["id"],"lang"));
+		$tempans = searchFromReading($hanzi,null,$profile["lang"]);
 		if($ans == $tempans){
 			loggingLearntHanzi($profile["id"],$hanzi,0,5);
+			$MessageBuilder_part =  new TextMessageBuilder("正解！");
+			$MessageBuilder->add($MessageBuilder_part);
 		}else{
 			loggingLearntHanzi($profile["id"],$hanzi,0,1);
+			$MessageBuilder_part =  new TextMessageBuilder("不正解！");
+			$MessageBuilder->add($MessageBuilder_part);
 		}
-
 	}
-
 	return $MessageBuilder;
 }

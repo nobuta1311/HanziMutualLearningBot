@@ -11,7 +11,7 @@ function command_carousel(){
     $actions = [];
     //パラメータを順番に羅列
     $actions_message=["発音の参照","漢字１文字の参照","意味と発音の参照","発音確認問題","語彙選択問題","学習状況参照","簡体字繁体字相互変換","音声確認","フィードバック","ユーザ設定変更","発音記号種類変更","学習モードの変更"];//12個
-    $actions_parameter=["BASE?mode=0","BASE?mode=1","BASE?mode=2","BASE?mode=3","BASE?mode=4","BASE?mode=5","BASE?mode=6","BASE?mode=7","BASE?mode=8","USERCONF","USERCONF","USERCONF"];	//12個
+    $actions_parameter=["BASE?mode=0","BASE?mode=1","BASE?mode=2","BASE?mode=3","BASE?mode=4","BASE?mode=5","BASE?mode=6","BASE?mode=7","BASE?mode=8","USERCONF","CHARCONF","USERCONF"];	//12個
     $column_title=["漢字の発音符号の参照","学習教材","付属機能","設定変更"]; //4個
     $column_detail=["入力された文字列から漢字を認識して発音を参照します．\nテキスト/位置情報/画像","発音・語彙の問題を出します\n発音は過去参照した漢字から参照・押下時に出題します．","簡体字⇔繁体字の変換\n漢字の発音音声の生成\n開発者メッセージ送信","各種設定を行います"];
     for($i=0;$i<4;$i++) {
