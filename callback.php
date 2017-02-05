@@ -1,10 +1,12 @@
 <?php
 require_once './lineapikey.php';
 require_once __DIR__ . '/../line/vendor/autoload.php';
-require_once "./command_carousel.php";
+require_once "./Command_carousel.php";
+require_once "./Others_carousel.php";
 require_once "./ModUserAttr.php";
 require_once "./UserControl.php";
 require_once "./TransHanzi/TransSimpTrad.php";
+require_once "./TransHanzi/TransOtherHanzi.php";
 require_once "./HanziPronunciation/HanziPinyin.php";
 require_once "./Voice/GenerateVoice.php";
 require_once "./Log/LoggingInput.php";
@@ -83,7 +85,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		}
 		break;
 	case 6:
-		$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received));
+		$MessageBuilder_part = new TextMessageBuilder(transSimpTrad($received,$profile["lang"]%2)); #langは0,2なら簡体字用に
 		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case 7:
@@ -97,12 +99,19 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		$MessageBuilder->add($MessageBuilder_part);
 		}
 		break;
-	case 8:
+	case 11:
 		exec("linetxt.sh "."\"=BOTからの送信：".$received."\"");
 		$MessageBuilder_part = new TextMessageBuilder("送信されました．\n設定は発音の参照に変更されました．");
 		$MessageBuilder->add($MessageBuilder_part);
 		altInfo($profile["id"],"base",0);
 		break;
+	default:
+		$othermodes=["Cantonese","Korean","JapaneseHiragana","JapaneseOnKun","Vietnamese"];
+
+		$MessageBuilder_part = new TextMessageBuilder(transOtherStr($received,$othermodes[$profile["base"]-12]));
+		$MessageBuilder->add($MessageBuilder_part);
+		break;
+
 	}//end of switch
 	//syslog(LOG_EMERG,print_r(transSimpTrad($received),true));
    	}//end of else
@@ -133,8 +142,8 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     }elseif("sticker" == $event->message->type){
 	$MessageBuilder_part = command_carousel();
 	$MessageBuilder->add($MessageBuilder_part);
-	$MessageBuilder_part =  new TextMessageBuilder("↑応答設定機能一覧↑");
-	$MessageBuilder->add($MessageBuilder_part);
+	#$MessageBuilder_part =  new TextMessageBuilder("↑応答設定機能一覧↑");
+	#$MessageBuilder->add($MessageBuilder_part);
     }elseif("location" == $event->message->type){//latitude longitude
 	$lat=$event->message->latitude;
 	$lon=$event->message->longitude;
@@ -183,36 +192,42 @@ return;
 
 function altByPostback($alttype,$altdata,$profile){
 	$MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
-	
-	if($alttype=="ALTINFO"){
+	switch($alttype){
+	case "ALTINFO":
 		$OutPutModes=["簡体字学習者に変更しました","繁体字学習者に変更しました","簡体字使用者に変更しました","繁体字使用者に変更しました．"]; 
 		$OutPutMode=explode("=",$altdata)[1];
 		altInfo($profile["id"],"lang",$OutPutMode);
 		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[($OutPutMode+1)%2]);
 		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($alttype=="ALTCHAR"){
+		break;
+	case "ALTCHAR":
 		$OutPutModes=["拼音モードに変更しました","注音モードに変更しました"]; 
 	$OutPutMode=explode("=",$altdata)[1];
 		altInfo($profile["id"],"char",$OutPutMode);
 		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[$OutPutMode]);
 		$MessageBuilder->add($MessageBuilder_part);
-
-	}elseif($alttype=="USERCONF"){	
+		break;
+	case "USERCONF":
 		$MessageBuilder_part = modUserAttr();
     		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($alttype=="CHARCONF"){	
+		break;
+	case "OTHERS":
+		$MessageBuilder_part = others_carousel();
+    		$MessageBuilder->add($MessageBuilder_part);
+		break;
+	case "CHARCONF":
 		$MessageBuilder_part = modCharAttr();
     		$MessageBuilder->add($MessageBuilder_part);
-	}elseif($alttype=="BASE"){
-		$actions_message_pattern=["発音の参照","漢字１文字の参照","意味と発音の参照","発音クイズ機能を有効にします","単語クイズ機能を有効にします","学習履歴を確認します","簡体字繁体字相互変換","音声確認","フィードバック\n次に送るメッセージは開発者に届きます．","ユーザ設定変更","発音記号種類変更","リセット"];//12個
+		break;
+	case "BASE":
+		$actions_message_pattern=["発音の参照をします","漢字１文字の参照をします","意味と発音の参照に変更します","発音クイズ機能を有効にします","単語クイズ機能を有効にします","学習履歴を確認します","簡体字繁体字相互変換を行います","入力漢字の音声を参照します","他言語の参照に切り替えます","ユーザ設定を変更します","発音記号種類を変更します","フィードバック\n次に送るメッセージは開発者に届きます．","広東語発音参照に切り替えます","朝鮮語参照に切り替えます","日本語のひらがな参照に切り替えます","漢字の日本語発音参照に切り替えます","ベトナム語発音にきりかえます"];//17個
 
 		$postbacked_parameter=explode("=",$altdata)[1];
 		altInfo($profile["id"],"base",$postbacked_parameter);	
 		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
 		$MessageBuilder->add($MessageBuilder_part);
-
-	}
-	elseif($alttype=="PRO"){ //char&ans
+		break;
+	case "PRO":
 		$data= explode("&",$altdata);
 		$hanzi = explode("=",$data[0])[1];
 		$ans = explode("=",$data[1])[1];
@@ -226,6 +241,11 @@ function altByPostback($alttype,$altdata,$profile){
 			$MessageBuilder_part =  new TextMessageBuilder("不正解！");
 			$MessageBuilder->add($MessageBuilder_part);
 		}
+		break;
+	default:
+		$MessageBuilder_part = new TextMessageBuilder("エラー：意図しないPostBackが送信されました");
+		$MessageBuilder->add($MessageBuilder_part);
+		break;
 	}
 	return $MessageBuilder;
 }

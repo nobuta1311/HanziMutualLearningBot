@@ -1,14 +1,6 @@
-#!/usr/bin/php
 <?php
+function japaneseToHiragana($input){
 include "appkey.php";
-if($argc==1){
-    print "ERROR";
-    return;
-}else{
-        $input = "";
-        for($i=1;$i<$argc;$i++)
-                $input.=$argv[$i];
-}
 $url = 'https://labs.goo.ne.jp/api/hiragana';
 $data = array(
     'app_id' => $appID,
@@ -24,5 +16,6 @@ $options = array('http' => array(
     'header' => implode("\r\n", $headers),
 ));
 $contents = file_get_contents($url, false, stream_context_create($options));
-print ((json_decode($contents,true))[]"converted"]);
+return  ((json_decode($contents,true))["converted"]);
+}
 ?>
