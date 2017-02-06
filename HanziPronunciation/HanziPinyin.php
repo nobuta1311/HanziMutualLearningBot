@@ -1,15 +1,13 @@
 <?php
 mb_internal_encoding("utf-8");
 //print strHanziRead("蔡英文",true,1,true,true);
-
-include "./pinyin_bpmf.php";
-
 function strHanziRead($inputstr,$hanzionly=false,$userinfo,$issum=false,$mean=false){
 
+include "./pinyin_bpmf.php";
 //meanはtrueならばissumもhanzionlyもtrueである
 if($mean){$hanzionly=true;$issum=true;}
 $hanzicount=0;
-if($userinfo%2==0)$ispinyin=true;
+if($userinfo["char"]%2==0)$ispinyin=true;
 else $ispinyin=false;
 //hanzionlyならば関係ない文字を出力しない
 
@@ -98,9 +96,8 @@ return $result;
 
 function searchFromReading($inputchar,$inputcharcode,$userinfo){//単一文字とする 
 include "/var/www/html/HanziMutualLearningBot/HanziPronunciation/idpass.php";
-//userinfoは簡体字繁體字簡体字繁體字
 $query="";
-if($userinfo%2==0){//簡体字
+if($userinfo["lang"]%2==0){//簡体字
 	if($inputchar==null)
 		$query="select mandarin_cn from reading where char_code=\"".$inputcharcode."\"";
 	else
@@ -111,17 +108,14 @@ if($userinfo%2==0){//簡体字
 	else
 		return null;
 }
-else{	
+else{			//繁体字のとき
 	if($inputchar==null)
 		$query="select mandarin_tw from reading where char_code=\"".$inputcharcode."\"";
 	else
 		$query="select mandarin_tw from reading where achar=\"".$inputchar."\"";
 	$result = sendQuery($query);
 	if(isset($result[0]) and isset($result[0]["mandarin_tw"]))
-		if($userinfo==1)
-			return $result[0]["mandarin_tw"];
-		else
-			return $result[0]["mandarin_tw"];
+		return $result[0]["mandarin_tw"];
 	else
 		return null;
 }

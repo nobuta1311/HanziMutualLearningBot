@@ -3,9 +3,6 @@ use \LINE\LINEBot\MessageBuilder\TemplateMessageBuilder as TemplateMessageBuilde
 use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
 //var_dump(command_carousel());
-function selectCharTypeButton(){
-	
-}
 function command_carousel(){
     $columns = []; // カルーセル型カラムを5つ追加する配列
     $actions = [];
@@ -16,7 +13,7 @@ function command_carousel(){
     for($i=0;$i<4;$i++) {
     // カルーセルに付与するボタンを作る
     	for($j=0;$j<3;$j++){
-	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message[$i*3+$j],$actions_parameter[$i*3+$j]);
+	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message[$i*3+$j],$actions_parameter[$i*3+$j],null);
 	}
     	$column = new TemplateBuilder\CarouselColumnTemplateBuilder(null, $column_detail[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/command".$i.".png", $actions);
     	$columns[] = $column;

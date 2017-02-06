@@ -4,20 +4,20 @@ function getProfile($event){
 	if($event->source->type=="user") {
 		$profile["type"]="user";
 		$profile["id"]=$event->source->userId;
-		$profile["lang"] = getInfo($profile["id"],"lang");
-		$profile["base"] = getInfo($profile["id"],"base");
 	}
 	elseif($event->source->type=="group"){
 		$profile["type"]="group";
-		$profile["id"]=$event->source->groupId;				$profile["lang"] = getInfo($profile["id"],"lang");
-		$profile["base"] = getInfo($profile["id"],"base");
+		$profile["id"]=$event->source->groupId;
 
 	}
 	else {
 		$profile["type"]="room";
-		$profile["id"]=$event->source->roomId;				$profile["lang"] = getInfo($profile["id"],"lang");
-		$profile["base"] = getInfo($profile["id"],"base");
+		$profile["id"]=$event->source->roomId;
 	}
+	$profile["lang"] = getInfo($profile["id"],"lang");
+	$profile["base"] = getInfo($profile["id"],"base");
+	$profile["char"] = getInfo($profile["id"],"char");
+
 	return $profile;
 }
 function addUser($userid){
@@ -49,7 +49,12 @@ function getInfo($userid,$place){
 	$json=json_decode(file_get_contents(__DIR__."/UserList.json"));
 	foreach($json as $value){
 		$eachrow=(array)$value;	
-		if($eachrow["userid"]==$userid){return $eachrow[$place];}
+		if($eachrow["userid"]==$userid){
+			if(isset($eachrow[$place]))
+				return $eachrow[$place];
+			else
+				return 0;//まだ決まってなかったら取り合えず0
+		}
 		$users[] = $eachrow;
 	}
 	return 1;

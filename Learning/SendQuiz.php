@@ -43,7 +43,7 @@ for($i=0;$i<$charnum;$i++){
 		$temp = searchFromReading(null,$acode,$userinfo);
 		$acode = dechex(hexdec($acode)+rand(1,10));
 		if($temp!=null){
-			if($userinfo==3){
+			if($userinfo["char"]==1){
 				$correct[$i][]=pinyinToBpmf(charPinyin($temp));
 			}else{
 				$correct[$i][]=$temp;

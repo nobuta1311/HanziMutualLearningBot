@@ -13,7 +13,7 @@ function others_carousel(){
     $column_detail=["広東語発音を参照します","朝鮮語を参照します","日本語をひらがなにします","日本語発音を参照します","ベトナム語発音を参照します"];
     for($i=0;$i<5;$i++) {
     // カルーセルに付与するボタンを作る
-	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message[$i],$actions_parameter[$i]);
+	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message[$i],$actions_parameter[$i],null);
     	$column = new TemplateBuilder\CarouselColumnTemplateBuilder(null, $column_detail[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/others".$i.".png", $actions);
     	$columns[] = $column;
     }

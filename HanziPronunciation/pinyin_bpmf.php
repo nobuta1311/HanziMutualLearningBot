@@ -1,17 +1,5 @@
 <?php
-/*
-if(isset($_GET["str"])){
-	$input = $_GET["str"];
-}else{
-	$input=$argv[1];
-}
-//$input = "";
-*/
-
-//for($i=0;$i<$length;$i++){
-
-
-	//文字を表す番号を取得
+//文字を表す番号を取得
 function pinyinToBpmf($input){
 $input=mb_strtolower($input);//大文字は処理できないので直す
 preg_match("/[1-5]/",$input,$matches,PREG_OFFSET_CAPTURE);//声調数字の場所を変更する
