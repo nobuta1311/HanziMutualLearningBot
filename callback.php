@@ -5,6 +5,7 @@ require_once "./Command_carousel.php";
 require_once "./Others_carousel.php";
 require_once "./ModUserAttr.php";
 require_once "./UserControl.php";
+require_once "./TextData.php";
 require_once "./TransHanzi/TransSimpTrad.php";
 require_once "./TransHanzi/TransOtherHanzi.php";
 require_once "./HanziPronunciation/HanziPinyin.php";
@@ -29,6 +30,9 @@ $httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient($lineaccesstoken);
 $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $linechannelsecret]);
 
 $profile = getProfile($bot,$event);
+
+
+
 
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 //イベントタイプ判別
@@ -61,7 +65,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     }elseif("video" == $event->message->type){
     }elseif("audio" == $event->message->type){
     }elseif("sticker" == $event->message->type){
-	$MessageBuilder_part = command_carousel();
+	$MessageBuilder_part = command_carousel($profile);
 	$MessageBuilder->add($MessageBuilder_part);
 	#$MessageBuilder_part =  new TextMessageBuilder("↑応答設定機能一覧↑");
 	#$MessageBuilder->add($MessageBuilder_part);
@@ -78,7 +82,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     $MessageBuilder = altByPostback($MessageBuilder,$postbackeddata[0],$postbackeddata[1],$profile);
 } elseif ("follow" == $event->type) {        //お友達追加時    
     $MessageBuilder = new MultiMessageBuilder();	
-    $MessageBuilder_part = modUserAttr();
+    $MessageBuilder_part = modUserAttr($profile);
     $MessageBuilder->add($MessageBuilder_part);
     $MessageBuilder_part = new TextMessageBuilder("お友達追加ありがとうございます．このBotは中国語を効率的に学ぶためのLINEbotです．まず，あなたの利用方法を教えてください．\n各種機能や設定を行うときには何かスタンプを送ってみてください．");
     $MessageBuilder->add($MessageBuilder_part);
@@ -101,6 +105,12 @@ if($MessageBuilder!=null){
 return;
 }
 function baseBehavior($MessageBuilder,$received,$profile,$from){
+    if($profile["lang"]>1){
+    include "./TextData_TW.php";
+    }else{
+    include "./TextData.php";
+    }
+
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 
 switch($profile["base"]){
@@ -128,7 +138,7 @@ switch($profile["base"]){
 	case 3:
 		$result = sendQuiz(strHanziOnly($received),$profile);
 		if(sizeof($result[0])==0){
-			$MessageBuilder_part =  new TextMessageBuilder("出題候補がありません．");
+			$MessageBuilder_part =  new TextMessageBuilder($message_noquiz);
 			$MessageBuilder->add($MessageBuilder_part);
 		}else{
 		for($i=0;$i<sizeof($result[0]);$i++){
@@ -138,8 +148,8 @@ switch($profile["base"]){
     			for($j=0;$j<4;$j++) {
     				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]);
     			}
-			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\" の発音は？","以下より選択してください",null,$actions);	
-				$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i]."の発音の確認",$button);
+			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\"".$button_forquiz1,$button_forquiz2,null,$actions);	
+				$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i].$button_forquizpc,$button);
 				$MessageBuilder->add($MessageBuilder_part);
 
 			}
@@ -163,7 +173,7 @@ switch($profile["base"]){
 		break;
 	case 11://フィードバック
 		exec("linetxt.sh "."\"=BOTからの送信：".$received."\"");
-		$MessageBuilder_part = new TextMessageBuilder("送信されました．\n設定は発音の参照に変更されました．");
+		$MessageBuilder_part = new TextMessageBuilder($messafterfeedback);
 		$MessageBuilder->add($MessageBuilder_part);
 		altInfo($profile["id"],"base",0);
 		break;
@@ -178,36 +188,39 @@ switch($profile["base"]){
 }
 
 function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
+	//actions_message_pattern，OutPutModesの読み込み
+	if($profile["lang"]>1){
+    		include "./TextData_TW.php";
+    	}else{
+    		include "./TextData.php";
+     	}
+
 	switch($alttype){
 	case "ALTINFO":
-		$OutPutModes=["簡体字学習者に変更しました","繁体字学習者に変更しました","簡体字使用者に変更しました","繁体字使用者に変更しました．"]; 
 		$OutPutMode=explode("=",$altdata)[1];
 		altInfo($profile["id"],"lang",$OutPutMode);
-		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[($OutPutMode+1)%2]);
+		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes_altinfo[($OutPutMode)]);
 		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case "ALTCHAR":
-		$OutPutModes=["拼音モードに変更しました","注音モードに変更しました"]; 
-	$OutPutMode=explode("=",$altdata)[1];
+		$OutPutMode=explode("=",$altdata)[1];
 		altInfo($profile["id"],"char",$OutPutMode);
-		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes[$OutPutMode]);
+		$MessageBuilder_part =  new TextMessageBuilder($OutPutModes_altchar[$OutPutMode]);
 		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case "USERCONF":
-		$MessageBuilder_part = modUserAttr();
+		$MessageBuilder_part = modUserAttr($profile);
     		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case "OTHERS":
-		$MessageBuilder_part = others_carousel();
+		$MessageBuilder_part = others_carousel($profile);
     		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case "CHARCONF":
-		$MessageBuilder_part = modCharAttr();
+		$MessageBuilder_part = modCharAttr($profile);
     		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case "BASE":
-		$actions_message_pattern=["発音の参照をします","漢字１文字の参照をします","意味と発音の参照に変更します","発音クイズ機能を有効にします","単語クイズ機能を有効にします","学習履歴を確認します","簡体字繁体字相互変換を行います","入力漢字の音声を参照します","他言語の参照に切り替えます","ユーザ設定を変更します","発音記号種類を変更します","フィードバック\n次に送るメッセージは開発者に届きます．","広東語発音参照に切り替えます","朝鮮語参照に切り替えます","日本語のひらがな参照に切り替えます","漢字の日本語発音参照に切り替えます","ベトナム語発音にきりかえます"];//17個
-
 		$postbacked_parameter=explode("=",$altdata)[1];
 		altInfo($profile["id"],"base",$postbacked_parameter);	
 		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
@@ -223,11 +236,11 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 		}
 		if($ans == $tempans){
 			loggingLearntHanzi($profile["id"],$hanzi,0,5);
-			$MessageBuilder_part =  new TextMessageBuilder("正解！");
+			$MessageBuilder_part =  new TextMessageBuilder($mess_correct);
 			$MessageBuilder->add($MessageBuilder_part);
 		}else{
 			loggingLearntHanzi($profile["id"],$hanzi,0,1);
-			$MessageBuilder_part =  new TextMessageBuilder("不正解！");
+			$MessageBuilder_part =  new TextMessageBuilder($mess_uncorrect);
 			$MessageBuilder->add($MessageBuilder_part);
 		}
 		break;
