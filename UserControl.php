@@ -1,9 +1,15 @@
 <?php
-function getProfile($event){
+function getProfile($bot,$event){
 	$profile=array();
 	if($event->source->type=="user") {
 		$profile["type"]="user";
 		$profile["id"]=$event->source->userId;
+		$temp = ($bot->getProfile($profile["id"]))->getJSONDecodedBody();
+		
+		$profile["displayName"] = $temp["displayName"];
+		$profile["pictureUri"] = $temp["pictureUri"];
+		$profile["statusMessage"] = $temp["statusMessage"];
+
 	}
 	elseif($event->source->type=="group"){
 		$profile["type"]="group";
@@ -14,10 +20,10 @@ function getProfile($event){
 		$profile["type"]="room";
 		$profile["id"]=$event->source->roomId;
 	}
+	addUser($profile["id"]);
 	$profile["lang"] = getInfo($profile["id"],"lang");
 	$profile["base"] = getInfo($profile["id"],"base");
 	$profile["char"] = getInfo($profile["id"],"char");
-
 	return $profile;
 }
 function addUser($userid){

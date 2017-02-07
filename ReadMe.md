@@ -21,14 +21,12 @@ Follow LICENSE.md.
 - [x] 漢字を抜き出す [hanzi_cognition](/ImageCognition/hanzi_cognition.php)
   改善必要
 - [ ] 日本語を抜き出す japanese_cognition
-- [ ] 物体を抜き出す things_cognition
+　中国語母語話者のために要る
 
 ### 音声認識 VoiceCognition
 - [ ] 音声を認識する voice_cognition
-
-### 言語判別 DistinctLanguage
-- [ ] 文字列から言語を見分ける（プロフィール，音声入力結果）distinct_language
-
+  基本は端末の音声入力を利用すればよいと思っている
+  
 ### 位置情報名取得 GetAddress
 - [x] 地名を取得 get_address
 
@@ -36,11 +34,11 @@ Follow LICENSE.md.
 - [ ] URLをもとにページの文字列を取得 get_web_page
 要検討（多すぎるため，読み込む漢字を厳選する必要がある）
 ### データベース登録 DatabaseMethods
-- [ ] 届いたメッセージarrived_message
-- [ ] 送信したメッセージsent_message
-- [ ] 漢字覚えているかどうか，リマインド回数など learning_hanzi
-- [ ] 漢字データベース読み込み hanzi_base
-- [ ] 漢字データベース修正 hanzi_base_mod
+- [x] 届いたメッセージarrived_message
+- [x] 送信したメッセージsent_message
+- [x] 漢字覚えているかどうか，リマインド回数など learning_hanzi
+- [x] 漢字データベース読み込み hanzi_base
+- [x] 漢字データベース修正 hanzi_base_mod
 
 ### 漢字辞書 ShowDict
 - [x] 簡体字辞書へのリンク show_simple 
@@ -49,7 +47,8 @@ Follow LICENSE.md.
 Wikitionaryに対応しているが，他の情報源もあわせて複数呈示する
 
 ### 繁体字簡体字変換 TransHanzi
-- [x] 指定した漢字に変換 trans_hanzi
+- [ ] 指定した漢字に変換 trans_hanzi
+ 一応できているが，利用するDBが違っていた
 逆の文字に変換する．
 ### 漢字読み変換 HanziPronunciation
 文字コードをキーに，各読み方などの情報をデータベースとして記録する方針．
@@ -60,17 +59,17 @@ Wikitionaryに対応しているが，他の情報源もあわせて複数呈示
 - [ ] ピンインから発音記号 pinyin_ipa
 	- [ ] 漢字から発音記号 hanzi_bpmf
 - [x] 多音字を処理する multi_readable
-
+- [x] 他言語（ハングルなど）への変換
 ### 音声合成 GenerateVoice
 - [x] 中国語生成 generate_chinese
 - [ ] 日本語生成 generate_japanese
-
+- [ ] 他言語の生成
 ### PDF画像化 PDFToImage
 - [ ] PDFを画像にする pdf_to_image
 
 ### 画像生成 GenerateImage
 - [ ] 文字列解析結果 analyzed_image
-- [ ] 学習：テスト testing_image
+- [x] 学習：テスト testing_image
 - [ ] 学習：新出漢字 somehanzi_image
 
 ### 形態素解析 MorphologicalAnalysis
@@ -104,9 +103,12 @@ Wikitionaryに対応しているが，他の情報源もあわせて複数呈示
 画像認識・位置情報の参照に利用している
 
 - [Microsoft Azure Bing Speech APi](https://azure.microsoft.com/ja-jp/services/cognitive-services/speech/)
-音声合成に利用している
+音声合成・画像認識に利用している
 
 
 # 利用データ
 ## [漢字データベース](http://kanji-database.sourceforge.net/index.html)
 ## [Unihan Database](http://unicode.org/charts/unihan.html)
+## [TOCFL単語リスト](http://www.sc-top.org.tw/jp/download.php)
+## [HSK単語リスト](http://www.chinesetest.cn/godownload.do)
+## [注音ピンイン対応表](http://www.erva.nl/zhuIn-hanIn.pdf)
