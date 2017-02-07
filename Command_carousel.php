@@ -5,9 +5,9 @@ use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
 //var_dump(command_carousel());
 function command_carousel($userinfo){
     if($userinfo["lang"]>1){
-    include "./TextData_TW.php";
+    include "./TextData_TW.txt";
     }else{
-    include "./TextData.php";
+    include "./TextData.txt";
     }
     $columns = []; // カルーセル型カラムを5つ追加する配列
     $actions = [];

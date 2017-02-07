@@ -5,7 +5,7 @@ require_once "./Command_carousel.php";
 require_once "./Others_carousel.php";
 require_once "./ModUserAttr.php";
 require_once "./UserControl.php";
-require_once "./TextData.php";
+require_once "./TextData.txt";
 require_once "./TransHanzi/TransSimpTrad.php";
 require_once "./TransHanzi/TransOtherHanzi.php";
 require_once "./HanziPronunciation/HanziPinyin.php";
@@ -106,9 +106,9 @@ return;
 }
 function baseBehavior($MessageBuilder,$received,$profile,$from){
     if($profile["lang"]>1){
-    include "./TextData_TW.php";
+    include "./TextData_TW.txt";
     }else{
-    include "./TextData.php";
+    include "./TextData.txt";
     }
 
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
@@ -190,9 +190,9 @@ switch($profile["base"]){
 function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 	//actions_message_pattern，OutPutModesの読み込み
 	if($profile["lang"]>1){
-    		include "./TextData_TW.php";
+    		include "./TextData_TW.txt";
     	}else{
-    		include "./TextData.php";
+    		include "./TextData.txt";
      	}
 
 	switch($alttype){

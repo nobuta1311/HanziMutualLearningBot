@@ -5,9 +5,9 @@ use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
 function modUserAttr($userinfo){
     if($userinfo["lang"]>1){
-    include "./TextData_TW.php";
+    include "./TextData_TW.txt";
     }else{
-    include "./TextData.php";
+    include "./TextData.txt";
     }
 
     for($i=0;$i<4;$i++) {// アクション（選択肢）を作る
@@ -20,9 +20,9 @@ function modUserAttr($userinfo){
 
 function modCharAttr($userinfo){
     if($userinfo["lang"]>1){
-    include "./TextData_TW.php";
+    include "./TextData_TW.txt";
     }else{
-    include "./TextData.php";
+    include "./TextData.txt";
     }
 
     for($i=0;$i<2;$i++) {// アクション（選択肢）を作る
