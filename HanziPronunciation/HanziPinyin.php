@@ -218,7 +218,7 @@ function pinyinChar($s){
 }
 
 function rehan($code){
-    $res= mb_convert_encoding(pack("H*",str_repeat('0', 8 - strlen($code)).$code), 'UTF-8', 'UTF-32BE');
+    $res= mb_convert_encoding(pack("H*",str_repeat('0', 8 - strlen(mb_strtolower($code))).$code), 'UTF-8', 'UTF-32BE');
     return $res;
 }
 function strHanziOnly($inputstr){

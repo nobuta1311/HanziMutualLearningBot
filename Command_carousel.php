@@ -12,7 +12,7 @@ function command_carousel($userinfo){
     $columns = []; // カルーセル型カラムを5つ追加する配列
     $actions = [];
 
-    $actions_parameter=["BASE?mode=0","BASE?mode=1","BASE?mode=2","BASE?mode=3","BASE?mode=4","BASE?mode=5","BASE?mode=6","BASE?mode=7","OTHERS","USERCONF","CHARCONF","BASE?mode=11"];	//12個
+    $actions_parameter=["BASE?mode=0","BASE?mode=1","BASE?mode=2","BASE?mode=3","MEAN?hanzi=0","BASE?mode=5","BASE?mode=6","BASE?mode=7","OTHERS","USERCONF","CHARCONF","BASE?mode=11"];	//12個
     for($i=0;$i<4;$i++) {
     // カルーセルに付与するボタンを作る
     	for($j=0;$j<3;$j++){

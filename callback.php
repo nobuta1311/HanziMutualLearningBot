@@ -31,9 +31,6 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $linechannelsecret]);
 
 $profile = getProfile($bot,$event);
 
-
-
-
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 //イベントタイプ判別
 if ("message" == $event->type) {            //一般的なメッセージ(文字・イメージ・音声・位置情報・スタンプ含む)
@@ -117,7 +114,7 @@ switch($profile["base"]){
 	case 0:
 		//syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
 		if($from=="image")
-			$result=strHanziRead($received,false,$profile,true);
+			$result=strHanziRead(strHanziOnly($received),false,$profile,true,false);
 		else
 			$result=strHanziRead($received,false,$profile,false);
 		$MessageBuilder_part =  new TextMessageBuilder($result);
@@ -136,7 +133,7 @@ switch($profile["base"]){
 	//	syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
 		break;
 	case 3:
-		$result = sendQuiz(strHanziOnly($received),$profile);
+		$result = sendQuizRead(strHanziOnly($received),$profile);
 		if(sizeof($result[0])==0){
 			$MessageBuilder_part =  new TextMessageBuilder($message_noquiz);
 			$MessageBuilder->add($MessageBuilder_part);
@@ -154,6 +151,10 @@ switch($profile["base"]){
 
 			}
 		}
+		break;
+	case 4://単語クイズ
+		sendQuizMean(strHanziOnly($received),$profile);
+	
 		break;
 	case 6:	//繁体字簡体字変換
 		if($from=="image"){$received = strHanziOnly($received);}
@@ -225,6 +226,15 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 		altInfo($profile["id"],"base",$postbacked_parameter);	
 		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
 		$MessageBuilder->add($MessageBuilder_part);
+		break;	
+	case "MEAN":
+		$data= explode("=",$altdata)[1];
+		if($data==0){
+			$MessageBuilder =  sendQuizMean($profile,null);
+		}else{
+			$MessageBuilder_part = new TextMessageBuilder("回答");
+			$MessageBuilder->add($MessageBuilder_part);
+		}
 		break;
 	case "PRO":
 		$data= explode("&",$altdata);
