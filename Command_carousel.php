@@ -18,7 +18,7 @@ function command_carousel($userinfo){
     	for($j=0;$j<3;$j++){
 	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message[$i*3+$j],$actions_parameter[$i*3+$j],null);
 	}
-    	$column = new TemplateBuilder\CarouselColumnTemplateBuilder(null, $column_detail[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/command".$i.".png", $actions);
+    	$column = new TemplateBuilder\CarouselColumnTemplateBuilder(null, $column_detail[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/".$i.".PNG", $actions);
     	$columns[] = $column;
     }
 // カラムの配列を組み合わせてカルーセルを作成する
