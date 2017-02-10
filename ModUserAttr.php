@@ -3,12 +3,8 @@ require_once __DIR__ . '/../line/vendor/autoload.php';
 use \LINE\LINEBot\MessageBuilder\TemplateMessageBuilder as TemplateMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
-function modUserAttr($userinfo){
-    if($userinfo["lang"]>1){
-    include "./TextData_TW.txt";
-    }else{
-    include "./TextData.txt";
-    }
+function modUserAttr($userinfo){ 
+    include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
 
     for($i=0;$i<4;$i++) {// アクション（選択肢）を作る
     	$actions[$i] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label_9[$i], "ALTINFO?lang=".$i);
@@ -19,12 +15,7 @@ function modUserAttr($userinfo){
 }
 
 function modCharAttr($userinfo){
-    if($userinfo["lang"]>1){
-    include "./TextData_TW.txt";
-    }else{
-    include "./TextData.txt";
-    }
-
+    include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
     for($i=0;$i<2;$i++) {// アクション（選択肢）を作る
     	$actions[$i] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label_10[$i], "ALTCHAR?char=".$i);
     }

@@ -102,11 +102,7 @@ if($MessageBuilder!=null){
 return;
 }
 function baseBehavior($MessageBuilder,$received,$profile,$from){
-    if($profile["lang"]>1){
-    include "./TextData_TW.txt";
-    }else{
-    include "./TextData.txt";
-    }
+include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
 
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 
@@ -189,12 +185,7 @@ switch($profile["base"]){
 }
 
 function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
-	//actions_message_pattern，OutPutModesの読み込み
-	if($profile["lang"]>1){
-    		include "./TextData_TW.txt";
-    	}else{
-    		include "./TextData.txt";
-     	}
+	include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
 
 	switch($alttype){
 	case "ALTINFO":

@@ -4,11 +4,7 @@ use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
 //var_dump(command_carousel());
 function command_carousel($userinfo){
-    if($userinfo["lang"]>1){
-    include "./TextData_TW.txt";
-    }else{
-    include "./TextData.txt";
-    }
+    include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
     $columns = []; // カルーセル型カラムを5つ追加する配列
     $actions = [];
 

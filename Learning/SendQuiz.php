@@ -12,7 +12,8 @@ use \LINE\LINEBot\MessageBuilder\TemplateMessageBuilder as TemplateMessageBuilde
 use \LINE\LINEBot\TemplateActionBuilder as TemplateActionBuilder;
 
 function sendQuizMean($userinfo,$answord){
-	include "./TextData.txt";
+	include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
+
 //出すクイズを決める 5個まで
 	$MessageBuilder = new MultiMessageBuilder();
 	$PROBNUMMAX=1;
