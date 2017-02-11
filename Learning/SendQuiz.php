@@ -36,9 +36,10 @@ function sendQuizMean($userinfo,$answord){
 	$label=[$result[1][0],$result[1][1],$result[1][2],$result[1][3]];
 	//	syslog(LOG_EMERG,print_r($result[1],true));
    	for($j=0;$j<4;$j++) {
-    		$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "MEAN?hanzi=".($j+1));
-    	}
+    		$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "MEAN?hanzi=".$result[0][0]."&mean=".$result[1][$j]."&iscorrect=".($j==0?"True":"False")."&limit=".(time()+60));
 
+    	}
+	shuffle($actions);
 	$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][0]."\"".$button_forquiz_mean1,$button_forquiz_mean2,null,$actions);	
 	$MessageBuilder_part = new TemplateMessageBuilder($result[0][0].$button_forquizpc_mean,$button);
 	$MessageBuilder->add($MessageBuilder_part);
@@ -46,57 +47,65 @@ function sendQuizMean($userinfo,$answord){
 }
 
 //発音クイズ
-function sendQuizRead($inputstr,$userinfo){
+function sendQuizRead($userinfo){
 //出すクイズを決める 5個まで
-$PROBNUMMAX=1;
-$charnum=0;
-if($inputstr==null){	//過去のデータから決めるとき
-	$query_past = "select * from learnthanzi order by rand() where level<5 limit ".$PROBNUMMAX.";";
+	$MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
+	include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
+
+	$PROBNUMMAX=1;
+	$charnum=0;
+	$query_past = "select * from learnthanzi where level<5 order by rand() limit ".$PROBNUMMAX.";";
 	$res_past = sendQuery($query_past);
 	$charnum = sizeof($res_past);
 	$target=array();
 	for($i=0;$i<$charnum;$i++){
 		$target[$i]=$res_past[$i]["hanzi"];		
 	}
-}else{			//現在のデータから決めるとき
-	$charar=array();
-	for($i=0;$i<mb_strlen($inputstr);$i++){
-		if(!in_array(mb_substr($inputstr,$i,1),$charar)){
-			$charar[]=mb_substr($inputstr,$i,1);
-		}//配列にしてシャッフル
-	}
-	$charnum = min($PROBNUMMAX,sizeof($charar));
-	shuffle($charar);
-	for($i=0;$i<$charnum;$i++){
-		$target[]=$charar[$i];
-	}
-}
 //syslog(LOG_EMERG,print_r($target,true));
-//return $target;
 //各漢字の正しい読み方（複数）を手に入れる
-$correct=array();
-for($i=0;$i<$charnum;$i++){
-	$acode = strtoupper(substr(json_encode($target[$i]),3,4));
-	$correct_char[$i] = searchFromReading(null,$acode,$userinfo);
-	while($j<4){
-		$temp = searchFromReading(null,$acode,$userinfo);
-		$acode = dechex(hexdec($acode)+rand(1,10));
-		if($temp!=null){
-			if($userinfo["char"]==1){
-				$correct[$i][]=pinyinToBpmf(charPinyin($temp));
+	$correct=array();
+	for($i=0;$i<$charnum;$i++){
+		$acode = strtoupper(substr(json_encode($target[$i]),3,4));
+		$correct_char[$i] = searchFromReading(null,$acode,$userinfo);
+		while($j<4){
+			$temp = searchFromReading(null,$acode,$userinfo);
+			$acode = dechex(hexdec($acode)+rand(1,10));
+			if($temp!=null){
+				if($userinfo["char"]==1){
+					$correct[$i][]=pinyinToBpmf(charPinyin($temp));
+				}else{
+					$correct[$i][]=$temp;
+				}
+				$j+=1;
 			}else{
-				$correct[$i][]=$temp;
-			}
-			$j+=1;
+				$j+=1;
+			}	
+		}		
+	}
 
-		}else{
-			$j+=1;
+	//return [$target,$correct,$correct_char];
+	$result = [$target,$correct,$correct_char];
+
+	//syslog(LOG_EMERG,print_r($result,true));
+	if(sizeof($result[0])==0){
+			$MessageBuilder_part =  new TextMessageBuilder($message_noquiz);
+			$MessageBuilder->add($MessageBuilder_part);
+	}else{
+
+		for($i=0;$i<sizeof($result[0]);$i++){
+			shuffle($result[1][$i]);
+ 			$label=[$result[1][$i][0],$result[1][$i][1],$result[1][$i][2],$result[1][$i][3]];
+		//	syslog(LOG_EMERG,print_r($result[1],true));
+    			for($j=0;$j<4;$j++) {
+    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]."&limit=".(time()+60));
+    			}
+			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\"".$button_forquiz1,$button_forquiz2,null,$actions);	
+			$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i].$button_forquizpc,$button);
+			$MessageBuilder->add($MessageBuilder_part);
 		}
 	}
-	
-}
-//syslog(LOG_EMERG,print_r($correct,true));
 
-return [$target,$correct,$correct_char];
+	return $MessageBuilder;
+
 }
 

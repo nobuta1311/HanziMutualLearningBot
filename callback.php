@@ -97,6 +97,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 
 if($MessageBuilder!=null){
 	$response = $bot->replyMessage($event->replyToken, $MessageBuilder);
+	//syslog(LOG_EMERG,print_r($response,true));
 }
 //syslog(LOG_EMERG, print_r($MessageBuilder, true));
 return;
@@ -128,8 +129,10 @@ switch($profile["base"]){
 		$MessageBuilder->add($MessageBuilder_part);
 	//	syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
 		break;
-	case 3:
-		$result = sendQuizRead(strHanziOnly($received),$profile);
+	case 3:	//発音クイズ
+		//$result = sendQuizRead(strHanziOnly($received),$profile);
+		//$result = sendQuizRead(null,$profile);			
+		/*
 		if(sizeof($result[0])==0){
 			$MessageBuilder_part =  new TextMessageBuilder($message_noquiz);
 			$MessageBuilder->add($MessageBuilder_part);
@@ -139,7 +142,7 @@ switch($profile["base"]){
  			$label=[$result[1][$i][0],$result[1][$i][1],$result[1][$i][2],$result[1][$i][3]];
 		//	syslog(LOG_EMERG,print_r($result[1],true));
     			for($j=0;$j<4;$j++) {
-    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]);
+    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]."&limit=".(time()+60));
     			}
 			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\"".$button_forquiz1,$button_forquiz2,null,$actions);	
 				$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i].$button_forquizpc,$button);
@@ -147,6 +150,7 @@ switch($profile["base"]){
 
 			}
 		}
+		*/
 		break;
 	case 4://単語クイズ
 		sendQuizMean(strHanziOnly($received),$profile);
@@ -219,15 +223,32 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 		$MessageBuilder->add($MessageBuilder_part);
 		break;	
 	case "MEAN":
-		$data= explode("=",$altdata)[1];
-		if($data==0){
+		if(explode("=",$altdata)[1]=="NULL"){
 			$MessageBuilder =  sendQuizMean($profile,null);
 		}else{
-			$MessageBuilder_part = new TextMessageBuilder("回答");
+			$data= explode("&",$altdata);
+			$hanzi = explode("=",$data[0])[1];
+			$ans = explode("=",$data[1])[1];
+			$iscorrect = explode("=",$data[2])[1] == "True";
+			$limit = explode("=",$data[3])[1];
+			if($limit>time()){
+			$MessageBuilder_part = new TextMessageBuilder($hanzi."の意味は".$ans. ($iscorrect ? "正解" : "不正解"));
 			$MessageBuilder->add($MessageBuilder_part);
+			}else{	
+				$MessageBuilder_part = new TextMessageBuilder("1分間以内に回答してください");
+				$MessageBuilder->add($MessageBuilder_part);
+
+			}
 		}
 		break;
 	case "PRO":
+		if(explode("=",$altdata)[1]=="NULL"){
+			$MessageBuilder =  sendQuizRead($profile);
+		}
+		syslog(LOG_EMERG,print_r($MessageBuilder,true));
+		/*else{
+
+		sendQuizRead(null,$profile);
 		$data= explode("&",$altdata);
 		$hanzi = explode("=",$data[0])[1];
 		$ans = explode("=",$data[1])[1];
@@ -248,7 +269,9 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 	default:
 		$MessageBuilder_part = new TextMessageBuilder("エラー：意図しないPostBackが送信されました");
 		$MessageBuilder->add($MessageBuilder_part);
+		}*/
 		break;
 	}
+
 	return $MessageBuilder;
 }
