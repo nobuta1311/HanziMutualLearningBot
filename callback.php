@@ -12,6 +12,7 @@ require_once "./HanziPronunciation/HanziPinyin.php";
 require_once "./Voice/GenerateVoice.php";
 require_once "./Log/LoggingInput.php";
 require_once "./Learning/SendQuiz.php";
+require_once "./Learning/ShowLearnt.php";
 require_once "./Log/SendQuery.php";
 //require_once "./ImageCognition/HanziCognition.php";
 use \LINE\LINEBot\MessageBuilder\AudioMessageBuilder as AudioMessageBuilder;
@@ -129,29 +130,6 @@ switch($profile["base"]){
 		$MessageBuilder->add($MessageBuilder_part);
 	//	syslog(LOG_EMERG,print_r(getInfo($profile["id"],"lang"),true));
 		break;
-	case 3:	//発音クイズ
-		//$result = sendQuizRead(strHanziOnly($received),$profile);
-		//$result = sendQuizRead(null,$profile);			
-		/*
-		if(sizeof($result[0])==0){
-			$MessageBuilder_part =  new TextMessageBuilder($message_noquiz);
-			$MessageBuilder->add($MessageBuilder_part);
-		}else{
-		for($i=0;$i<sizeof($result[0]);$i++){
-			shuffle($result[1][$i]);
- 			$label=[$result[1][$i][0],$result[1][$i][1],$result[1][$i][2],$result[1][$i][3]];
-		//	syslog(LOG_EMERG,print_r($result[1],true));
-    			for($j=0;$j<4;$j++) {
-    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]."&limit=".(time()+60));
-    			}
-			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\"".$button_forquiz1,$button_forquiz2,null,$actions);	
-				$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i].$button_forquizpc,$button);
-				$MessageBuilder->add($MessageBuilder_part);
-
-			}
-		}
-		*/
-		break;
 	case 4://単語クイズ
 		sendQuizMean(strHanziOnly($received),$profile);
 	
@@ -212,6 +190,10 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 		$MessageBuilder_part = others_carousel($profile);
     		$MessageBuilder->add($MessageBuilder_part);
 		break;
+	case "RESULT":
+		$MessageBuilder_part = new TextMessageBuilder(showLearnt($profile));
+		$MessageBuilder->add($MessageBuilder_part);
+		break;
 	case "CHARCONF":
 		$MessageBuilder_part = modCharAttr($profile);
     		$MessageBuilder->add($MessageBuilder_part);
@@ -227,13 +209,14 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 			$MessageBuilder =  sendQuizMean($profile,null);
 		}else{
 			$data= explode("&",$altdata);
-			$hanzi = explode("=",$data[0])[1];
+			$word = explode("=",$data[0])[1];
 			$ans = explode("=",$data[1])[1];
 			$iscorrect = explode("=",$data[2])[1] == "True";
 			$limit = explode("=",$data[3])[1];
 			if($limit>time()){
-			$MessageBuilder_part = new TextMessageBuilder($hanzi."の意味は".$ans. ($iscorrect ? "正解" : "不正解"));
-			$MessageBuilder->add($MessageBuilder_part);
+				loggingLearntWord($profile,$word,($iscorrect ? 1 : 0));
+				$MessageBuilder_part = new TextMessageBuilder($ans.": ". ($iscorrect ? "正解" : "不正解"));
+				$MessageBuilder->add($MessageBuilder_part);
 			}else{	
 				$MessageBuilder_part = new TextMessageBuilder("1分間以内に回答してください");
 				$MessageBuilder->add($MessageBuilder_part);
@@ -244,32 +227,21 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 	case "PRO":
 		if(explode("=",$altdata)[1]=="NULL"){
 			$MessageBuilder =  sendQuizRead($profile);
-		}
-		syslog(LOG_EMERG,print_r($MessageBuilder,true));
-		/*else{
-
-		sendQuizRead(null,$profile);
-		$data= explode("&",$altdata);
-		$hanzi = explode("=",$data[0])[1];
-		$ans = explode("=",$data[1])[1];
-		$tempans = searchFromReading($hanzi,null,$profile);
-		if($profile["char"]==1){
-			$tempans=pinyinToBpmf(charPinyin($tempans));
-		}
-		if($ans == $tempans){
-			loggingLearntHanzi($profile["id"],$hanzi,0,5);
-			$MessageBuilder_part =  new TextMessageBuilder($mess_correct);
-			$MessageBuilder->add($MessageBuilder_part);
 		}else{
-			loggingLearntHanzi($profile["id"],$hanzi,0,1);
-			$MessageBuilder_part =  new TextMessageBuilder($mess_uncorrect);
-			$MessageBuilder->add($MessageBuilder_part);
+			$data= explode("&",$altdata);
+			$hanzi = explode("=",$data[0])[1];
+			$ans = explode("=",$data[1])[1];
+			$iscorrect = explode("=",$data[2])[1] == "True";
+			$limit = explode("=",$data[3])[1];
+			if($limit>time()){
+				loggingLearntHanzi($profile,$hanzi,($iscorrect ? 1 : 0));
+				$MessageBuilder_part = new TextMessageBuilder($ans.": ". ($iscorrect ? "正解" : "不正解"));
+				$MessageBuilder->add($MessageBuilder_part);
+			}else{	
+				$MessageBuilder_part = new TextMessageBuilder("1分間以内に回答してください");
+				$MessageBuilder->add($MessageBuilder_part);
+			}
 		}
-		break;
-	default:
-		$MessageBuilder_part = new TextMessageBuilder("エラー：意図しないPostBackが送信されました");
-		$MessageBuilder->add($MessageBuilder_part);
-		}*/
 		break;
 	}
 

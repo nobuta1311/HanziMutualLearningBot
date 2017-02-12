@@ -93,12 +93,12 @@ function sendQuizRead($userinfo){
 	}else{
 
 		for($i=0;$i<sizeof($result[0]);$i++){
-			shuffle($result[1][$i]);
  			$label=[$result[1][$i][0],$result[1][$i][1],$result[1][$i][2],$result[1][$i][3]];
 		//	syslog(LOG_EMERG,print_r($result[1],true));
     			for($j=0;$j<4;$j++) {
-    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]."&limit=".(time()+60));
+    				$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($label[$j], "PRO?char=".$result[0][$i]."&ans=".$result[1][$i][$j]."&iscorrect=".($j==0?"True":"False")."&limit=".(time()+60));
     			}
+			shuffle($actions);
 			$button = new TemplateBuilder\ButtonTemplateBuilder(" \"".$result[0][$i]."\"".$button_forquiz1,$button_forquiz2,null,$actions);	
 			$MessageBuilder_part = new TemplateMessageBuilder($result[0][$i].$button_forquizpc,$button);
 			$MessageBuilder->add($MessageBuilder_part);

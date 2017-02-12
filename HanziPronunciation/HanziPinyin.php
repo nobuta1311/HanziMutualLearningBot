@@ -2,8 +2,8 @@
 mb_internal_encoding("utf-8");
 //print strHanziRead("蔡英文",true,1,true,true);
 function strHanziRead($inputstr,$hanzionly=false,$userinfo,$issum=false,$mean=false){
-for($i=0;$i<mb_strlen($inputstr);$i++){
-	loggingLearntHanzi($userinfo["id"],mb_substr($inputstr,$i,1),0,0);
+for($i=0;$i<mb_strlen(strHanziOnly($inputstr));$i++){
+	loggingLearntHanzi($userinfo,mb_substr(strHanziOnly($inputstr),$i,1),0);
 }
 
 include "./pinyin_bpmf.php";
