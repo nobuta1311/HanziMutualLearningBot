@@ -4,9 +4,13 @@ $button_forquiz1="の発音は？";
 $button_forquiz2="以下より選択してください";
 $button_forquiz_mean1="の意味は？";
 $button_forquiz_mean2="以下より選択してください";
-$message_noquiz="出題候補がありません．";
+$message_noquiz="出題候補がありません．過去参照した漢字から選択します";
 $button_forquizpc="の発音の確認";
 $button_forquizpc_mean="の意味の確認";
+
+$correct_message = "正解!";
+$incorrect_message ="不正解";
+$answer_1min = "1分間以内に答えてください．";
 
 $messafterfeedback="送信されました．\n設定は発音の参照に変更されました．";
 //読み込み元 callback, altbypostback

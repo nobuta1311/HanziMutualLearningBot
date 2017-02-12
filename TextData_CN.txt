@@ -9,6 +9,10 @@ $button_forquizpc ="的发音确认";
 $button_forquizpc_mean="的意思确认";
 $messafterfeedback ="已发送\ n设定已变更为参考发音。";
 
+$correct_message = "正确答案！";
+$incorrect_message ="不正确";
+$answer_1min = "请在一分钟内作答";
+
 //callback,altbypostback
 $actions_message_pattern = ["发音的参考","汉字一个字的参考","变更为意思及发音的参考","启用发音问答功能","启用汉字问答功能","确认学习纪录","繁简互换","输入的汉字发音参考","切换为其他语言","变更用户设定","变更发音记号种类","意见回馈\n以下你所传送的讯息将会发送给开发者。","切换到粤语发音","切换到韩国语发音","切换到日文平假名的参考","切换到汉字的日语发音","切换到越南语的发音"];
 

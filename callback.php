@@ -104,7 +104,7 @@ if($MessageBuilder!=null){
 return;
 }
 function baseBehavior($MessageBuilder,$received,$profile,$from){
-include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
+include $profile["lang"]<2 ? "./TextData.txt" : ($profile["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
 
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 
@@ -167,7 +167,7 @@ switch($profile["base"]){
 }
 
 function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
-	include $userinfo["lang"]<2 ? "./TextData.txt" : ($userinfo["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
+	include $profile["lang"]<2 ? "./TextData.txt" : ($profile["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
 
 	switch($alttype){
 	case "ALTINFO":
@@ -199,6 +199,7 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
     		$MessageBuilder->add($MessageBuilder_part);
 		break;
 	case "BASE":
+
 		$postbacked_parameter=explode("=",$altdata)[1];
 		altInfo($profile["id"],"base",$postbacked_parameter);	
 		$MessageBuilder_part =  new TextMessageBuilder($actions_message_pattern[$postbacked_parameter]);
@@ -215,10 +216,10 @@ function altByPostback($MessageBuilder,$alttype,$altdata,$profile){
 			$limit = explode("=",$data[3])[1];
 			if($limit>time()){
 				loggingLearntWord($profile,$word,($iscorrect ? 1 : 0));
-				$MessageBuilder_part = new TextMessageBuilder($ans.": ". ($iscorrect ? "正解" : "不正解"));
+				$MessageBuilder_part = new TextMessageBuilder($ans.": ". ($iscorrect ? $correct_message : $incorrect_message));
 				$MessageBuilder->add($MessageBuilder_part);
 			}else{	
-				$MessageBuilder_part = new TextMessageBuilder("1分間以内に回答してください");
+				$MessageBuilder_part = new TextMessageBuilder($answer_1min);
 				$MessageBuilder->add($MessageBuilder_part);
 
 			}

@@ -17,7 +17,7 @@ function others_carousel($userinfo){
     for($i=0;$i<5;$i++) {
     // カルーセルに付与するボタンを作る
 	$actions[$j] = new TemplateActionBuilder\PostbackTemplateActionBuilder($actions_message_other[$i],$actions_parameter_other[$i],null);
-    	$column = new TemplateBuilder\CarouselColumnTemplateBuilder(null, $column_detail_other[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/others".$i.".png", $actions);
+    	$column = new TemplateBuilder\CarouselColumnTemplateBuilder(null, $column_detail_other[$i], "https://nobuta.xyz/HanziMutualLearningBot/image/others".$i.".PNG", $actions);
     	$columns[] = $column;
     }
 // カラムの配列を組み合わせてカルーセルを作成する
