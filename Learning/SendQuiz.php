@@ -4,6 +4,7 @@
 require_once __DIR__."/../HanziPronunciation/HanziPinyin.php";
 require_once __DIR__."/../HanziPronunciation/pinyin_bpmf.php";
 require_once __DIR__."/../Log/SendQuery.php";
+require_once __DIR__."/../TransHanzi/TransSimpTrad.php";
 
 use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder as TextMessageBuilder;
@@ -28,7 +29,7 @@ function sendQuizMean($userinfo,$answord){
 	$target=array();
 	$meaning=array();
 	for($i=0;$i<4;$i++){
-		$target[$i]=$res[$i]["hanzi"];
+		$target[$i]=transSimpTrad($res[$i]["hanzi"],$userinfo);
 		$meaning[$i]=$res[$i]["meaning"];
 	}
 	$result = [$target,$meaning];
