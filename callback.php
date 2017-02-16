@@ -10,6 +10,8 @@ require_once "./TransHanzi/TransSimpTrad.php";
 require_once "./TransHanzi/TransOtherHanzi.php";
 require_once "./HanziPronunciation/HanziPinyin.php";
 require_once "./Voice/GenerateVoice.php";
+require_once "./ImageCognition/HanziCognitionAzure.php";
+require_once "./ImageCognition/HanziCognitionGoogle.php";
 require_once "./Log/LoggingInput.php";
 require_once "./Learning/SendQuiz.php";
 require_once "./Learning/ShowLearnt.php";
@@ -32,6 +34,7 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $linechannelsecret]);
 
 $profile = getProfile($bot,$event);
 
+
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 //イベントタイプ判別
 if ("message" == $event->type) {            //一般的なメッセージ(文字・イメージ・音声・位置情報・スタンプ含む)
@@ -39,7 +42,6 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
 
-//	syslog(LOG_EMERG,print_r(mb_substr($received,0,3),true));
 	if(mb_substr($received,0,3)=="@@@"){    
 		$inputbytxt = explode("?",$received);
 		$MessageBuilder=altByPostback($MessageBuilder,mb_substr($inputbytxt[0],3),$inputbytxt[1],$profile);
@@ -50,12 +52,15 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     }elseif("image" == $event->message->type){ 
 	$response = $bot->getMessageContent($event->message->id);
         if ($response->isSucceeded()) {
-           	$tempfile = "./ImageCognition/images/".$event->message->id;
+           	$tempfile = "./ImageCognition/images/".$event->message->id .".png";
     		file_put_contents($tempfile, $response->getRawBody());
-		exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
-		$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
+		//$result = hanziCognitionAzure($event->message->id,$profile);
+		$result = hanziCognitionGoogle($event->message->id,$profile);
+		//exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
+		$received = implode($result);
+		//$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
 		file_put_contents($tempfile.".txt",$received);
-		
+
 		$MessageBuilder = baseBehavior($MessageBuilder,$received,$profile,"image");
 		//syslog(LOG_EMERG,print_r($result_2,true));
 	}
