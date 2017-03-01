@@ -1,21 +1,12 @@
 #!/usr/bin/php
 <?php
-include __DIR__."/apikey.php";// APIキーは別ファイルで
+function hanziCognitionGoogle($source,$profile){
+include __DIR__."/apikey_google.php";// APIキーは別ファイルで
 //print $api_key;
 	//入力
-if(isset($_GET["str"])){
-    $source=$_GET["str"];
-}else if($argc>1){
-    $source=$argv[1];
-    $source= __DIR__."/".$source;
-}else{
-    return;
-}
-
-// リファラー (許可するリファラーを設定した場合)
 $referer = "nobuta.xyz/*" ;
 // 画像へのパス
-$image_path = $source;//"./menkyo.png" ;
+$image_path = __DIR__."/images/".$source.".png";//"./menkyo.png" ;
 // リクエスト用のJSONを作成
 $json = json_encode( array(
 	"requests" => array(
@@ -83,20 +74,14 @@ curl_close( $curl ) ;
 $json = substr( $res1, $res2["header_size"] ) ;				// 取得したJSON
 $header = substr( $res1, 0, $res2["header_size"] ) ;		// レスポンスヘッダー
 
-// 出力
-//	echo "<h2>JSON</h2>" ;
-//	echo $json ;
 $ar=json_decode($json,true);
-//print_r($ar);
-/*
-$labels="";
-for($i=0;$i<sizeof($ar["responses"][0]["labelAnnotations"]);$i++){
-	  $labels.=trim($ar["responses"][0]["labelAnnotations"][$i]["description"]);
+$labels=[];
+$poly=[];
+for($i=0;$i<sizeof($ar["responses"][0]["textAnnotations"]);$i++){
+	  $labels[]=trim($ar["responses"][0]["textAnnotations"][$i]["description"]);
+	  $poly[]=$ar["responses"][0]["textAnnotations"][$i]["boundingPoly"]["vertices"];
 }
-syslog(LOG_EMERG,print_r($labels,true));
+//syslog(LOG_EMERG,print_r($poly,true));
 
-print $labels;
-*/
-print  ($ar["responses"][0]["textAnnotations"][0]["description"]);
-//	echo "<h2>ヘッダー</h2>" ;
-//	echo $header ;
+return [$labels,$poly];
+}

@@ -10,6 +10,9 @@ require_once "./TransHanzi/TransSimpTrad.php";
 require_once "./TransHanzi/TransOtherHanzi.php";
 require_once "./HanziPronunciation/HanziPinyin.php";
 require_once "./Voice/GenerateVoice.php";
+require_once "./ImageCognition/HanziCognitionAzure.php";
+require_once "./ImageCognition/HanziCognitionGoogle.php";
+require_once "./ImageCognition/OverWrite.php";
 require_once "./Log/LoggingInput.php";
 require_once "./Learning/SendQuiz.php";
 require_once "./Learning/ShowLearnt.php";
@@ -18,6 +21,7 @@ require_once "./Log/SendQuery.php";
 use \LINE\LINEBot\MessageBuilder\AudioMessageBuilder as AudioMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\TemplateBuilder as TemplateBuilder;
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder as TextMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\ImageMessageBuilder as ImageMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\MultiMessageBuilder as MultiMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\TemplateMessageBuilder as TemplateMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\TemplateBuilder\ConfirmTemplateBuilder	as ConfirmTemplateBuilder; 
@@ -32,6 +36,7 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $linechannelsecret]);
 
 $profile = getProfile($bot,$event);
 
+
 $MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 //イベントタイプ判別
 if ("message" == $event->type) {            //一般的なメッセージ(文字・イメージ・音声・位置情報・スタンプ含む)
@@ -39,7 +44,6 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	$received = $event->message->text;
 	$received = str_replace(array("\r\n", "\r", "\n"), '', $received);
 
-//	syslog(LOG_EMERG,print_r(mb_substr($received,0,3),true));
 	if(mb_substr($received,0,3)=="@@@"){    
 		$inputbytxt = explode("?",$received);
 		$MessageBuilder=altByPostback($MessageBuilder,mb_substr($inputbytxt[0],3),$inputbytxt[1],$profile);
@@ -50,14 +54,27 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     }elseif("image" == $event->message->type){ 
 	$response = $bot->getMessageContent($event->message->id);
         if ($response->isSucceeded()) {
-           	$tempfile = "./ImageCognition/images/".$event->message->id;
+           	$tempfile = "./ImageCognition/images/".$event->message->id .".png";
     		file_put_contents($tempfile, $response->getRawBody());
-		exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
-		$received = implode(str_replace(array(";","\r\n", "\r", "\n"), '', $result));
+		exec("convert ".$tempfile."  -resize 1500x1500\< ".$tempfile);
+		//$result = hanziCognitionAzure($event->message->id,$profile);
+		$result = hanziCognitionGoogle($event->message->id,$profile);
+		//exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
+		$reads = [];
+		for($j=0;$j<sizeof($result[0]);$j++){	//配列の各データをPinyinになおして画像埋め込みしたい
+			$reads []= strHanziRead(strHanziOnly($result[0][$j]),false,$profile,true,false,true);
+		}
+		
+		$received = implode($result[0]);
 		file_put_contents($tempfile.".txt",$received);
 		
 		$MessageBuilder = baseBehavior($MessageBuilder,$received,$profile,"image");
-		//syslog(LOG_EMERG,print_r($result_2,true));
+	//	$MessageBuilder->add($MessageBuilder_part);
+		
+		overWrite($result[0],$result[1],$reads,$event->message->id);//テキスト，位置，発音，画像
+		//syslog(LOG_EMERG,print_r($httppath."ImageCognition/images/".$event->message->id."_ow.png",true));
+		$MessageBuilder_part = new ImageMessageBuilder($httppath."ImageCognition/images/".$event->message->id."_ow.png",$httppath."ImageCognition/images/".$event->message->id."_th.png");
+		$MessageBuilder->add($MessageBuilder_part);
 	}
 		//$MessageBuilder_part = new TextMessageBuilder("画像アップロード失敗");
     }elseif("video" == $event->message->type){
@@ -82,7 +99,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
     $MessageBuilder = new MultiMessageBuilder();	
     $MessageBuilder_part = modUserAttr($profile);
     $MessageBuilder->add($MessageBuilder_part);
-    $MessageBuilder_part = new TextMessageBuilder("お友達追加ありがとうございます．このBotは中国語を効率的に学ぶためのLINEbotです．まず，あなたの利用方法を教えてください．\n各種機能や設定を行うときには何かスタンプを送ってみてください．");
+    $MessageBuilder_part = new TextMessageBuilder("お友達追加ありがとうございます．このBotは中国語を効率的に学ぶためのLINEbotです．まず，あなたの利用方法を教えてください．\n各種機能や設定を行うときには何かスタンプを送ってみてください．漢字を含むテキストや画像を送ることで，設定に応じて発音符号などが帰ってきます．とにかくスタンプを送ってみてください！");
     $MessageBuilder->add($MessageBuilder_part);
     exec("linetxt_uri.sh ".urlencode("友達追加されました//".$profile["id"]."//".$profile["displayName"]."//".$profile["statusMessage"]."//".$profile["pictureUri"]));
 } elseif ("join" == $event->type) {           //グループに入ったときのイベント
@@ -92,8 +109,12 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
   exec("linetxt_uri.sh ".urlencode("グループ退出させられました by ".$profile["id"]));//退出させられた
 } elseif("unfollow" == $event->type){
    exec("linetxt_uri.sh ".urlencode("ブロックされました by ".$profile["id"]));
-} else {					//ブロックされた
-   exec("linetxt_uri.sh ".urlencode("ブロックされました by ".$profile["id"]));
+} elseif("beacon" == $event->type){
+	//$MessageBuilder_part = new TextMessageBuilder($event->beacon->type);
+    	//$MessageBuilder->add($MessageBuilder_part);
+
+}else{
+   exec("linetxt_uri.sh ".urlencode("未知のメッセージ ".$profile["id"]));
 }
 
 if($MessageBuilder!=null){
@@ -106,7 +127,6 @@ return;
 function baseBehavior($MessageBuilder,$received,$profile,$from){
 include $profile["lang"]<2 ? "./TextData.txt" : ($profile["lang"]==2 ? "./TextData_CN.txt" : "./TextData_TW.txt");
 
-$MessageBuilder = new MultiMessageBuilder();	//メッセージ用意    
 
 switch($profile["base"]){
 	case 0:

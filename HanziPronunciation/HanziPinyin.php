@@ -1,7 +1,7 @@
 <?php
 mb_internal_encoding("utf-8");
 //print strHanziRead("蔡英文",true,1,true,true);
-function strHanziRead($inputstr,$hanzionly=false,$userinfo,$issum=false,$mean=false){
+function strHanziRead($inputstr,$hanzionly=false,$userinfo,$issum=false,$mean=false,$readonly=false){
 for($i=0;$i<mb_strlen(strHanziOnly($inputstr));$i++){
 	loggingLearntHanzi($userinfo,mb_substr(strHanziOnly($inputstr),$i,1),0);
 }
@@ -19,6 +19,7 @@ $inputstrlen=mb_strlen($inputstr);
 $outputread=array();
 $outputmean=array();
 $outputstr="";
+$outputread="";
 for($i=10;$i>1;$i--){
 	if($inputstrlen<$i)continue;
 	for($j=0;$j+$i<=$inputstrlen;$j++){
@@ -77,7 +78,10 @@ for($i=0;$i<$inputstrlen;$i++){
 		$outputstr.=$outputchar[$i];
 		if($issum){
 			$outputstr.=":".$outputread[$i];
-			if($mean and isset($outputmean[$i])) $outputstr.="\n".$outputmean[$i];
+			$outputonlyread.=$outputread[$i];
+			if($mean and isset($outputmean[$i])) {
+				$outputstr.="\n".$outputmean[$i];
+			}
 		}else{
 			$outputstr.=$outputread[$i];
 		}
@@ -87,6 +91,7 @@ for($i=0;$i<$inputstrlen;$i++){
 	}
 }
 if($hanzicount==0)$outputstr="";
+if($readonly==true) return $outputonlyread;
 return rtrim($outputstr,"\n");
 }
 
