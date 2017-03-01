@@ -58,7 +58,7 @@ $json = json_encode( array(
 					*/
 			) ,
 			"imageContext"=>array(
-					"languageHints" => array("ja","zh-CN","zh-TW",)
+					"languageHints" => array("zh-CN","zh-TW","ja")
 				),	
 		) ,
 	) ,

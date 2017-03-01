@@ -73,7 +73,7 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 	if(mb_strstr($event->message->address,",")){//カンマを含む場合は英語表記
 	  exec("./GetAddress/get_address.php ".$lat." ".$lon,$location);
 	}else{$location[0]=$event->message->address;}//英語表記じゃなければそのまま
-	if($location[0]!=""){$MessageBuilder = baseBehavior($MessageBuilder,$received,$profile,"location");}
+	if($location[0]!=""){$MessageBuilder = baseBehavior($MessageBuilder,$location[0],$profile,"location");}
     }
 } elseif("postback" == $event->type){
     $postbackeddata=explode("?",$event->postback->data);
