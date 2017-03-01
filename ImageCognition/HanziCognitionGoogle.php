@@ -76,8 +76,12 @@ $header = substr( $res1, 0, $res2["header_size"] ) ;		// レスポンスヘッ�
 
 $ar=json_decode($json,true);
 $labels=[];
+$poly=[];
 for($i=0;$i<sizeof($ar["responses"][0]["textAnnotations"]);$i++){
 	  $labels[]=trim($ar["responses"][0]["textAnnotations"][$i]["description"]);
+	  $poly[]=$ar["responses"][0]["textAnnotations"][$i]["boundingPoly"]["vertices"];
 }
-return $labels;
+//syslog(LOG_EMERG,print_r($poly,true));
+
+return [$labels,$poly];
 }
