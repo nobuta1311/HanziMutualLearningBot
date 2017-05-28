@@ -32,7 +32,10 @@ for($i=10;$i>1;$i--){
 		$outputread[$j]="";
 		$outputmean[$j]=$finded[0]["eng_mean"];
 		$readalpha=$finded[0]["read_str"];
+		
 		foreach(explode(" ",$readalpha) as $key=>$val){
+			//syslog(LOG_EMERG,print_r($val,true));
+
 			if($ispinyin)
 				$outputread[$j].=pinyinChar($val)." ";
 			else
@@ -171,6 +174,7 @@ function charPinyin($s){
 function pinyinChar($s){
     $tension=substr($s,-1)-1;
     $s=substr($s,0,strlen($s)-1);
+
     $codes=array(
         array( //a
             "0101","00E1","01CE","00E0","0061"
@@ -202,9 +206,11 @@ function pinyinChar($s){
     }else if($cho!==FALSE){
         $result= mb_substr($s,0,$cho).rehan($codes[1][$tension]).mb_substr($s,$cho+1);
     }
-    else if($che!=FALSE){
+    else if($che!==FALSE){
+	//syslog(LOG_EMERG,print_r(mb_substr($s,0,$che)."~".rehan($codes[2][$tension])."~".mb_substr($s,$che+1),true));
+	
         $result= mb_substr($s,0,$che).rehan($codes[2][$tension]).mb_substr($s,$che+1); 
-    }else if($chu!=FALSE || $chi!=FALSE){
+    }else if($chu!==FALSE || $chi!==FALSE){
         if($chu<$chi){
             $result= mb_substr($s,0,$chi).rehan($codes[4][$tension]).mb_substr($s,$chi+1); 
         }else{
@@ -222,6 +228,8 @@ function pinyinChar($s){
     if($chv!==FALSE){
         $result=mb_substr($result,0,$chv-1).rehan($codes[5][4]).mb_substr($result,$chv+1);
     }
+    //syslog(LOG_EMERG,print_r($result,true));
+
     return $result;
 }
 

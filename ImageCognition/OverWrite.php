@@ -1,5 +1,8 @@
 <?php
 function overWrite($text,$poly,$read,$filename){
+$timestr=date("s")."\n";
+//syslog(LOG_EMERG,print_r($timestr,true));
+
 // 画像ファイルのpath
 $filePathSr = __DIR__."/images/".$filename.".png";
 $filePath = __DIR__."/images/".$filename."_ow.png";
@@ -24,7 +27,8 @@ $point = [];//各ブロックの左上x,yと右下端のx,yを取得する.サ�
 $point[0] = 40;
 //フォントサイズを小さくする
 for($i=1;$i<sizeof($text)-1;$i++){
-
+	$timestr.=$i.":".date("s")." ";
+	//syslog(LOG_EMERG,print_r($timestr,true));
 	if($fontsize>40)$fontsize=40;
 	if($read[$i]==""){$point[$i]=$point[$i-1];$fontsize+=10;continue;}
 	$draw->setFontSize($fontsize);
@@ -53,7 +57,7 @@ for($i=1;$i<sizeof($text)-1;$i++){
 	//		syslog(LOG_EMERG,print_r($fontsize." ".$diffx." ".$diffy." ".$metric["textWidth"]." ".$metric["textHeight"]." ".$read[$i],true));
 
 			$point[$i]=$fontsize;
-			$fontsize+=15;
+			$fontsize+=5;
 			continue;
 		}
 		//syslog(LOG_EMERG,print_r($point,true));
@@ -61,14 +65,17 @@ for($i=1;$i<sizeof($text)-1;$i++){
 		continue;
 	}
 	$point[$i]=$fontsize;
-	$fontsize+=15;
+	$fontsize+=5;
 }
 $point[sizeof($text)-1]=$point[sizeof($text)-2];
 //文字サイズを調整する
+$timestr.="フォントサイズ決定".date("s")."\n";
 
 //syslog(LOG_EMERG,print_r($point,true));
 //書き込む
 for($i=1;$i<sizeof($text);$i++){
+	$timestr.=$i.":".date("s")."\n";
+
 	if($read[$i]=="")continue;
 	$currenttext  = $text[$i];
 	unset($text[$i]);
@@ -105,14 +112,15 @@ for($i=1;$i<sizeof($text);$i++){
 //$templateImg->drawImage( $draw );
 // 画像へ文字列を合成！
 //syslog(LOG_EMERG,print_r($tan,true));
+$timestr.="合成終了".date("s")."\n";
+//syslog(LOG_EMERG,print_r($timestr,true));
 
 // ファイルとして出力
 $res = $templateImg->writeImage($filePath);
 //サムネイル
 $thumbImg = $templateImg->clone();
-$thumbImg->thumbnailImage(100, 100, true);
+$thumbImg->thumbnailImage(200, 200, true);
 $thumbImg->writeImage($filePathTh);
 // お掃除
 $templateImg->destroy();
-
 }

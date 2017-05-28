@@ -62,7 +62,8 @@ if ("message" == $event->type) {            //一般的なメッセージ(文字
 		//exec("./ImageCognition/hanzi_cognition.php .".$tempfile,$result);
 		$reads = [];
 		for($j=0;$j<sizeof($result[0]);$j++){	//配列の各データをPinyinになおして画像埋め込みしたい
-			$reads []= strHanziRead(strHanziOnly($result[0][$j]),false,$profile,true,false,true);
+			$reads [$j]= strHanziRead(strHanziOnly($result[0][$j]),false,$profile,true,false,true);
+			//syslog(LOG_EMERG,print_r($result[0][$j]." ".strHanziOnly($result[0][$j])." ".$reads[$j],true));
 		}
 		
 		$received = implode($result[0]);
